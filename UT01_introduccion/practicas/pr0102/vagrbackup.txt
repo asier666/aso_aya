@@ -1,0 +1,50 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.define "maquina1" do |m1|
+    m1.vm.box = "StefanScherer/windows_2019"
+    m1.vm.hostname = "Win2019"
+  end
+  config.vm.provider "virtualbox" do |va|
+    va.name = "Maquina 1 Win2019"
+    va.memory = 4096
+    va.cpus = 4
+  end
+end
+Vagrant.configure("2") do |config|
+  config.vm.define "maquina2" do |m2|
+    m2.vm.box = "gusztavvargadr/windows-10"
+    m2.vm.hostname = "Win10"
+  end
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "Maquina 2 Win10"
+    vb.memory = 2048
+    vb.cpus = 2
+  end
+end
+
+
+https://tecnolitas.com/blog/laboratorio-multi-maquina-con-vagrant/
+
+Vagrant.configure("2") do |config|
+  config.vm.define "maquina1" do |maq1|
+    maq1.vm.box = "StefanScherer/windows_2019"
+    maq1.vm.hostname = "windows2019Server"
+    maq1.vm.provider "virtualbox" do |vb1|
+      vb1.name = "Win2019Server"
+      vb1.memory = 8164
+      vb1.cpus = 4
+    end
+  end
+
+  config.vm.define "maquina2" do |maq2|
+    maq2.vm.box = "gusztavvargadr/windows-10"
+    maq2.vm.hostname = "Windows 10"
+    maq2.vm.provider "virtualbox" do |vb2|
+      vb2.name = "Win10"
+      vb2.memory = 2048 
+      vb2.cpus = 2
+    end
+  end
+end
