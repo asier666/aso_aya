@@ -5,22 +5,24 @@ Vagrant.configure("2") do |config|
   config.vm.define "maquina1" do |maq1|
     maq1.vm.box = "gusztavvargadr/windows-server-2019-standard"
     maq1.vm.hostname = "windows2019Server"
+    maq1.vm.network "private_network", ip: "10.0.0.15"
     maq1.vm.provider "virtualbox" do |vb1|
       vb1.name = "Win2019Server"
       vb1.memory = 4096
       vb1.cpus = 4
     end
-    config.vm.network "private_network", ip: "10.0.0.1"
+ 
   end
 
   config.vm.define "maquina2" do |maq2|
     maq2.vm.box = "gusztavvargadr/windows-10"
     maq2.vm.hostname = "Windows10"
+    maq2.vm.network "private_network", ip: "10.0.0.16"
     maq2.vm.provider "virtualbox" do |vb2|
       vb2.name = "Win10"
       vb2.memory = 4096 
       vb2.cpus = 4
     end
-    config.vm.network "private_network", ip: "10.0.0.2"
+    
   end
 end
