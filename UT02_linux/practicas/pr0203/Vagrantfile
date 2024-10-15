@@ -1,0 +1,7 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu2204"
+  config.vm.network "public_network", ip: "172.16.0.2"
+end
