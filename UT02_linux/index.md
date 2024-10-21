@@ -6,8 +6,8 @@
 
 ### [pr0203](./practicas/pr0203/pr0203.md) - Configuración de SSH para varios usuarios
 
-### [pr0203](./practicas/pr0204/pr0204.md) - Programación de tareas con cron
+### [pr0204](./practicas/pr0204/pr0204.md) - Programación de tareas con `cron`
 
-### [pr0203](./practicas/pr0205/pr0205.md) - Copia de seguridad mediante SSH
+### [pr0205](./practicas/pr0205/pr0205.md) - Copia de seguridad mediante SSH
 
 ## [Volver al índice](../index.md)
