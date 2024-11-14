@@ -19,6 +19,77 @@ Ping 1.1, 1.2, 1.3, 1.4 (que mande ping) --> Si contesta el equipo, lo marco. Si
 /16 cambaia 255.255.0.0
 
 /8 255.0.0.0
+
+==
+SUBRED="192.168.1"
+RANGO_INICIO=1
+RANGO_FIN=254
+
+# Mensaje de inicio
+echo "Escaneando la red $SUBRED.0/24..."
+
+# Recorrer el rango de direcciones IP
+for IP in $(seq $RANGO_INICIO $RANGO_FIN); do
+    DIRECCION_IP="$SUBRED.$IP"
+    
+    # Enviar un ping a cada IP con un timeout de 1 segundo
+    ping -c 1 -W 1 $DIRECCION_IP > /dev/null 2>&1
+    
+    # Verificar si el ping fue exitoso
+    if [ $? -eq 0 ]; then
+        echo "La IP $DIRECCION_IP está activa."
+    else
+        echo "La IP $DIRECCION_IP no responde."
+    fi
+done
+==
+```
+## CODIGO
+```bash
+#!/bin/bash
+
+read -p "Introduce una dirección de red " usrred
+subred=
+ping -w 1 -c 1 $usrred > /dev/null
+if [ $? -eq 0 ]
+then
+        echo "si"
+fi
+``` 
+echo "Por favor, ingresa una cadena de texto:"
+read entrada
+
+# Obtener los 3 últimos caracteres
+ultimos_tres=${entrada: -3}
+
+# Mostrar los resultados
+echo "Los 3 últimos caracteres son: $ultimos_tres"
+
+
+# CÓDIGO HASTA AHORA:
+```BASH
+#!/bin/bash
+
+read -p "Introduce una dirección de red " usrred
+barra=$(echo $usrred | cut -d'/' -f 2)
+direccion=$(echo $usrred | cut -d'/' -f 1)
+echo $barra
+echo $direccion
+case $barra in
+        24)
+                echo $barra;;
+        16)
+                echo $barra;;
+        8)
+                echo $barra;;
+        *)
+                echo "Direccion no valida";;
+esac
+ping -w 1 -c 1 $usrred > /dev/null
+if [ $? -eq 0 ]
+then
+        echo "si"
+fi
 ```
 
 - **Detección de puertos abiertos**: una vez identificado cada equipo, realiza un escaneo de puertos para identificar aquellos que están abiertos, guardando el número de puerto y el servicio asociado. Para saber si hay un puerto abierto o no puedes utilizar el comando `nc`, que se explica un poco más adelatne. Para conocer el servicio asociado a cada puerto tienes que recurrir al fichero [tcp.csv](./tcp.csv) que contiene una relación de puertos y el servicio correspondiente.
