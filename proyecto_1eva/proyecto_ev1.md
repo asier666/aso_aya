@@ -20,35 +20,28 @@ Ping 1.1, 1.2, 1.3, 1.4 (que mande ping) --> Si contesta el equipo, lo marco. Si
 
 /8 255.0.0.0
 
-==
-SUBRED="192.168.1"
-RANGO_INICIO=1
-RANGO_FIN=254
-
-# Mensaje de inicio
-echo "Escaneando la red $SUBRED.0/24..."
-
-# Recorrer el rango de direcciones IP
-for IP in $(seq $RANGO_INICIO $RANGO_FIN); do
-    DIRECCION_IP="$SUBRED.$IP"
-    
-    # Enviar un ping a cada IP con un timeout de 1 segundo
-    ping -c 1 -W 1 $DIRECCION_IP > /dev/null 2>&1
-    
-    # Verificar si el ping fue exitoso
-    if [ $? -eq 0 ]; then
-        echo "La IP $DIRECCION_IP está activa."
-    else
-        echo "La IP $DIRECCION_IP no responde."
-    fi
-done
-==
 ```
 ## CODIGO
 ```bash
 #!/bin/bash
 
 read -p "Introduce una dirección de red " usrred
+
+if [[ $ussrred = ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+then
+        while IFS=.
+        read octeto
+        do
+                if ((octeto < 0 || octeto > 255))
+                then
+                        echo "Esa IP no es válida"
+                fi
+        done
+else
+        echo "La IP no es válida"
+fi
+echo "La IP es válida"
+
 subred=
 ping -w 1 -c 1 $usrred > /dev/null
 if [ $? -eq 0 ]
@@ -69,27 +62,71 @@ echo "Los 3 últimos caracteres son: $ultimos_tres"
 # CÓDIGO HASTA AHORA:
 ```BASH
 #!/bin/bash
-
 read -p "Introduce una dirección de red " usrred
 barra=$(echo $usrred | cut -d'/' -f 2)
 direccion=$(echo $usrred | cut -d'/' -f 1)
+
 echo $barra
 echo $direccion
+
 case $barra in
         24)
-                echo $barra;;
+                subred=$(echo $direccion | cut -d'.' -f 1-3)
+                echo $subred
+                
+                for i in {1..254}
+                do
+                        ping -w 1 -c 1 $subred.$i > /dev/null
+                        if [ $? -eq 0 ]
+                        then
+                                echo "$subred.$i encontrada"
+                        fi
+                done
+                echo "yasta";;
         16)
-                echo $barra;;
+                subred=$(echo $direccion | cut -d'.' -f 1-2)
+                echo $subred
+                for j in {0..255}
+                do
+                        i=1
+                        until [ $i -eq 254 ]
+                        do
+                                ping -w 1 -c 1 $subred.$j.$i > /dev/null
+                                if [ $? -eq 0 ]
+                                then
+                                        echo "$subred.$j.$i encontrada"
+                                fi
+                                i=$(( $i+1 ))
+                        done
+                done
+                echo "yasta";;
         8)
-                echo $barra;;
+                subred=$(echo $direccion | cut -d'.' -f 1)
+                echo $subred
+                for k in {168..255}
+                do
+                        j=0
+                        until [ $j -eq 255 ]
+                        do
+                                i=1
+                                until [ $i -eq 254 ]
+                                do
+                                        ping -w 1 -c 1 $subred.$k.$j.$i > /dev/null
+                                        if [ $? -eq 0 ]
+                                        then
+                                                echo "$subred.$k.$j.$i encontrada"
+                                        fi
+                                        i=$(( $i+1 ))
+                                done
+                                j=$(( $j+1 ))
+                        done
+                done
+                echo "yasta";;
         *)
                 echo "Direccion no valida";;
 esac
-ping -w 1 -c 1 $usrred > /dev/null
-if [ $? -eq 0 ]
-then
-        echo "si"
-fi
+#ping -w 1 -c 1 $usrred > /dev/null
+
 ```
 
 - **Detección de puertos abiertos**: una vez identificado cada equipo, realiza un escaneo de puertos para identificar aquellos que están abiertos, guardando el número de puerto y el servicio asociado. Para saber si hay un puerto abierto o no puedes utilizar el comando `nc`, que se explica un poco más adelatne. Para conocer el servicio asociado a cada puerto tienes que recurrir al fichero [tcp.csv](./tcp.csv) que contiene una relación de puertos y el servicio correspondiente.
