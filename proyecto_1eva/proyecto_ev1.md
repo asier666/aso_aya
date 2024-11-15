@@ -26,28 +26,26 @@ Ping 1.1, 1.2, 1.3, 1.4 (que mande ping) --> Si contesta el equipo, lo marco. Si
 #!/bin/bash
 
 read -p "Introduce una dirección de red " usrred
-
-if [[ $ussrred = ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+direccion=$(echo $usrred | cut -d'/' -f 1)
+# VERIFICACION IP FORMATO CORRECTO
+if [[ $direccion =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
 then
-        while IFS=.
-        read octeto
+        n=1
+        until [ $n -eq 5 ]
         do
+                octeto=$(echo $direccion | cut -d'.' -f $n)
                 if ((octeto < 0 || octeto > 255))
                 then
-                        echo "Esa IP no es válida"
+                        read -p "Esa dirección no es correcta. Introduce una dirección de red " usrred
                 fi
+                n=$(( $n+1 ))
         done
 else
-        echo "La IP no es válida"
+        echo "La IP no es válida, comprueba la sintaxis"
+        read usrred
 fi
-echo "La IP es válida"
 
-subred=
-ping -w 1 -c 1 $usrred > /dev/null
-if [ $? -eq 0 ]
-then
-        echo "si"
-fi
+
 ``` 
 echo "Por favor, ingresa una cadena de texto:"
 read entrada
