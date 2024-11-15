@@ -22,12 +22,23 @@ Ping 1.1, 1.2, 1.3, 1.4 (que mande ping) --> Si contesta el equipo, lo marco. Si
 
 ```
 ## CODIGO
+
+
+
+# Obtener los 3 últimos caracteres
+ultimos_tres=${entrada: -3}
+
+# Mostrar los resultados
+echo "Los 3 últimos caracteres son: $ultimos_tres"
+
+# FUNCIONES
+## VERIFICACION IP FORMATO CORRECTO
 ```bash
 #!/bin/bash
 
 read -p "Introduce una dirección de red " usrred
 direccion=$(echo $usrred | cut -d'/' -f 1)
-# VERIFICACION IP FORMATO CORRECTO
+function verificarip {
 if [[ $direccion =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
 then
         n=1
@@ -42,19 +53,73 @@ then
         done
 else
         echo "La IP no es válida, comprueba la sintaxis"
-        read usrred
 fi
-
-
+}
 ``` 
+## buscapuertos:
+```bash
+function escaneopuertos {
+        echo "---------------------------------------------------"
+        echo "          Detección de puertos abiertos             "
+        echo "---------------------------------------------------"
+        echo "Iniciando el escaneo de puertos..."
+        IFS=
+        while read ip
+        do
+                for j in {78..85}
+                do 
+                        nc -zv -w1 $ip $j
+                if [ $? -eq 0 ]
+                then
+                        echo "PUerto encontrado"
+                else
+                        echo "No puertos"
+                fi
+                done
+        done < redes_encontradas.txt
+        }
+```
 
+## RASTREAR IPs PING /24:
+```bash
+#!/bin/bash
+read -p "introduce ip " usrred
+barra=$(echo $usrred | cut -d'/' -f 2)
+direccion=$(echo $usrred | cut -d'/' -f 1)
+function rastreoips {
+subred=$(echo $direccion | cut -d'.' -f 1-3)
+                echo $subred
+                redes_encontradas="redes_encontradas.txt"
+                > $redes_encontradas
+                for i in {1..254}
+                do
+                        ttl=$(ping -w 1 -c 1 $subred.$i | grep -oP 'ttl=\K\d+')
+                        ping -w 1 -c 1 $subred.$i > /dev/null
+                        if [ $? -eq 0 ]
+                        then
+                                echo " /=== DIRECCION $subred.$i ===\ " >> "$redes_encontradas"
+                                echo -e "\e[5;35m===/===/===/===/===/===/===/===/===/===\e[0m"
+                                echo -e "\e[32m Equipo encontrado en la dirección \e[1;32m$subred.$i\e[0m"
+                                if [ $ttl -ge 127 ]
+                                then
+                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mWindows\e[0m"
+                                        echo "TTL = $ttl -> Windows" >> "$redes_encontradas"
+                                elif [ $ttl -le 64 ]
+                                then
+                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mLinux\e[0m"
+                                        echo "TTL = $ttl -> Linux" >> "$redes_encontradas"
+                                else
+                                        echo -e "Sistema operativo desconocido detectado con TTL \e[1;31mm$ttl \e[0m"
+                                        echo "TTL = $ttl -> Desconocido" >> "$redes_encontradas"
+                                fi
 
-# Obtener los 3 últimos caracteres
-ultimos_tres=${entrada: -3}
+                        fi
+                done
+                echo "yasta"
+                }
 
-# Mostrar los resultados
-echo "Los 3 últimos caracteres son: $ultimos_tres"
-
+rastreoips
+```
 
 # CÓDIGO HASTA AHORA:
 ```BASH
@@ -70,27 +135,26 @@ case $barra in
         24)
                 subred=$(echo $direccion | cut -d'.' -f 1-3)
                 echo $subred
-                
+                redes_encontradas="redes_encontradas.txt"
                 for i in {1..254}
                 do
                         ttl=$(ping -w 1 -c 1 $subred.$i | grep -oP 'ttl=\K\d+')
                         ping -w 1 -c 1 $subred.$i > /dev/null
                         if [ $? -eq 0 ]
                         then
-                                echo "===/===/===/===/===/===/===/===/===/==="
-                                echo "Equipo encontrado en la dirección $subred.$i"
-                                if [ $ttl -eq 127 ]
+                                echo "$subred.$i" >> "$redes_encontradas"
+                                echo -e "\e[5;35m===/===/===/===/===/===/===/===/===/===\e[0m"
+                                echo -e "\e[32m Equipo encontrado en la dirección \e[1;32m$subred.$i\e[0m"
+                                if [ $ttl -ge 127 ]
                                 then
-                                        echo "---------------------"
-                                        echo "TTL=127 => Windows"
-                                elif [ $ttl -eq 64 ]
+                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mWindows\e[0m"
+                                elif [ $ttl -le 64 ]
                                 then
-                                        echo "---------------------"
-                                        echo "TTL=64 => Linux"
+                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mLinux\e[0m"
                                 else
-                                        echo "TTL no reconocido"
+                                        echo -e "Sistema operativo desconocido detectado con TTL \e[1;31mm$ttl \e[0m"
                                 fi
-                                
+                               
                         fi
                 done
                 echo "yasta";;
