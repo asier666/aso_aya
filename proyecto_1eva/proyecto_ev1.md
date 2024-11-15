@@ -47,8 +47,7 @@ fi
 
 
 ``` 
-echo "Por favor, ingresa una cadena de texto:"
-read entrada
+
 
 # Obtener los 3 últimos caracteres
 ultimos_tres=${entrada: -3}
@@ -74,10 +73,24 @@ case $barra in
                 
                 for i in {1..254}
                 do
+                        ttl=$(ping -w 1 -c 1 $subred.$i | grep -oP 'ttl=\K\d+')
                         ping -w 1 -c 1 $subred.$i > /dev/null
                         if [ $? -eq 0 ]
                         then
-                                echo "$subred.$i encontrada"
+                                echo "===/===/===/===/===/===/===/===/===/==="
+                                echo "Equipo encontrado en la dirección $subred.$i"
+                                if [ $ttl -eq 127 ]
+                                then
+                                        echo "---------------------"
+                                        echo "TTL=127 => Windows"
+                                elif [ $ttl -eq 64 ]
+                                then
+                                        echo "---------------------"
+                                        echo "TTL=64 => Linux"
+                                else
+                                        echo "TTL no reconocido"
+                                fi
+                                
                         fi
                 done
                 echo "yasta";;
