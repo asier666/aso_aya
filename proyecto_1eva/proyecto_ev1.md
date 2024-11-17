@@ -64,16 +64,26 @@ function escaneopuertos {
         echo "---------------------------------------------------"
         echo "Iniciando el escaneo de puertos..."
         IFS=
-        while read ip
+        while read pu
         do
-                for j in {78..85}
+                for j in {79..81} #CAMBIAR A TODO EL RANGO DE PUERTOS
                 do 
-                        nc -zv -w1 $ip $j
+                        echo "Escaneando puerto $j en $pu..."
+                        nc -zv -w1 $pu $j > /dev/null
+                        
                 if [ $? -eq 0 ]
                 then
-                        echo "PUerto encontrado"
+                        echo "Puerto $j abierto"
+                        if [ -f "tcp.csv" ]
+                        then
+                                SERVICIO=$(grep ",$j," tcp.csv | cut -d',' -f3)
+                                echo "Servicio: $SERVICIO"
+                        else
+                                echo "Servicio desconocido. No se pudo encontrar el archivo tcp.csv"
+                        fi
                 else
-                        echo "No puertos"
+                        echo "Puerto $j cerrado"
+                        echo " "
                 fi
                 done
         done < redes_encontradas.txt

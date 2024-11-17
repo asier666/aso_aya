@@ -30,18 +30,28 @@ function escaneopuertos {
         echo "          Detección de puertos abiertos             "
         echo "---------------------------------------------------"
         echo "Iniciando el escaneo de puertos..."
+        echo " "
         IFS=
         while read pu
         do
                 for j in {79..81} #CAMBIAR A TODO EL RANGO DE PUERTOS
                 do 
-                        nc -zv -w1 $pu $j
+                        echo "Escaneando puerto $j en $pu..."
+                        nc -zv -w1 $pu $j 2>/dev/null
+                        
                 if [ $? -eq 0 ]
                 then
-                    SERVICIO=$(grep ",$j," tcp.csv | cut -d',' -f3)
-                        echo "Puerto $j Abierto | Servicio: $SERVICIO"
+                        echo "Puerto $j abierto"
+                        if [ -f "tcp.csv" ]
+                        then
+                                SERVICIO=$(grep ",$j," tcp.csv | cut -d',' -f3)
+                                echo "Servicio: $SERVICIO"
+                        else
+                                echo "Servicio desconocido. No se pudo encontrar el archivo tcp.csv"
+                        fi
                 else
-                        echo "No puertos"
+                        echo "Puerto $j cerrado"
+                        echo " "
                 fi
                 done
         done < redes_encontradas.txt
@@ -55,7 +65,7 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                 > $redes_encontradas
                 archivo_usuario="archivo_usuario.txt"
                 > $archivo_usuario
-                for i in {1..26}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
+                for i in {20..26}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
                 do
                         ttl=$(ping -w 1 -c 1 $subred.$i | grep -oP 'ttl=\K\d+')
                         ping -w 1 -c 1 $subred.$i > /dev/null
@@ -63,7 +73,8 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                         then
                                 echo $subred.$i >> "$redes_encontradas"
                                 echo " /=== DIRECCION $subred.$i ===\ " >> "$archivo_usuario"
-                                echo -e "\e[5;35m===/===/===/===/===/===/===/===/===/===\e[0m"
+                                echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                                echo " "
                                 echo -e "\e[32m Equipo encontrado en la dirección \e[1;32m$subred.$i\e[0m"
                                 if [ $ttl -ge 127 ]
                                 then
@@ -77,12 +88,14 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                                         echo -e "Sistema operativo desconocido detectado con TTL \e[1;31mm$ttl \e[0m"
                                         echo "TTL = $ttl -> Desconocido" >> "$archivo_usuario"
                                 fi
-
+                                echo " "
                         fi
                 done
                 echo "yasta"
                 }
 
+
+hora_ini=$(date +%s)
 read -p "Introduce una dirección de red " usrred
 barra=$(echo $usrred | cut -d'/' -f 2)
 direccion=$(echo $usrred | cut -d'/' -f 1)
@@ -97,4 +110,11 @@ echo "Dirección bien"
 rastreoips
 
 escaneopuertos
+
+
+hora_fin=$(date +%s)
+tiempo_ejecucion=$(($hora_fin - $hora_ini))
+
+echo "El programa ha tardado $tiempo_ejecucion segundos en ejecutarse"
+echo "Salida"
 ```
