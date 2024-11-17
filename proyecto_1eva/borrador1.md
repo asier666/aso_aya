@@ -1,9 +1,6 @@
 CÓDIGO
 ```bash
-
-
 #!/bin/bash
-
 
 # FUNCIONES
 # FUNCION VERIFICAR IP
@@ -42,7 +39,7 @@ function escaneopuertos {
                 if [ $? -eq 0 ]
                 then
                     SERVICIO=$(grep ",$j," tcp.csv | cut -d',' -f3)
-                        echo "Puerto $j servicio $SERVICIO"
+                        echo "Puerto $j Abierto | Servicio: $SERVICIO"
                 else
                         echo "No puertos"
                 fi
