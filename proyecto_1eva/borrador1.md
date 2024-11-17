@@ -63,7 +63,7 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                 echo $subred
                 redes_encontradas="redes_encontradas.txt"
                 > $redes_encontradas
-                archivo_usuario="archivo_usuario.txt"
+                
                 > $archivo_usuario
                 for i in {20..26}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
                 do
@@ -72,31 +72,51 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                         if [ $? -eq 0 ]
                         then
                                 echo $subred.$i >> "$redes_encontradas"
-                                echo " /=== DIRECCION $subred.$i ===\ " >> "$archivo_usuario"
+                                echo " /=== DIRECCION $subred.$i ===\ " >> $archivo_usuario
                                 echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
                                 echo " "
                                 echo -e "\e[32m Equipo encontrado en la dirección \e[1;32m$subred.$i\e[0m"
                                 if [ $ttl -ge 127 ]
                                 then
                                         echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mWindows\e[0m"
-                                        echo "TTL = $ttl -> Windows" >> "$archivo_usuario"
+                                        echo "TTL = $ttl -> Windows" >> $archivo_usuario
                                 elif [ $ttl -le 64 ]
                                 then
                                         echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mLinux\e[0m"
-                                        echo "TTL = $ttl -> Linux" >> "$archivo_usuario"
+                                        echo "TTL = $ttl -> Linux" >> $archivo_usuario
                                 else
                                         echo -e "Sistema operativo desconocido detectado con TTL \e[1;31mm$ttl \e[0m"
-                                        echo "TTL = $ttl -> Desconocido" >> "$archivo_usuario"
+                                        echo "TTL = $ttl -> Desconocido" >> $archivo_usuario
                                 fi
                                 echo " "
                         fi
                 done
-                echo "yasta"
                 }
 
-
+## CÓDIGO
 hora_ini=$(date +%s)
 read -p "Introduce una dirección de red " usrred
+read -p "Introduce un nombre de archivo para guardar los resultados: " usrfile
+read -p "Elige la extensión del archivo de resultados (csv o json): " usrext
+
+case $usrext in
+        csv)
+        archivo_usuario="$userfile.csv"
+        
+        if [ ! -f $archivo_usuario ]
+        then
+                touch $archivo_usuario
+        fi
+        echo "Los resultados se guardarán en $archivo_usuario";;
+        json)
+        archivo_usuario="$userfile.json"
+        echo "Los resultados se guardarán en $usrfile.json";;
+        *)
+        archivo_usuario="$usrfile"
+        echo "Los resultados se guardarán en $usrfile";;
+esac
+
+
 barra=$(echo $usrred | cut -d'/' -f 2)
 direccion=$(echo $usrred | cut -d'/' -f 1)
 verificarip
