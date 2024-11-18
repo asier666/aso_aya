@@ -4,53 +4,91 @@ CÓDIGO
 
 # FUNCIONES
 # FUNCION VERIFICAR IP
+function dibujo {
+        echo "
+     ......................................................................................     
+     .:@@@@@@-:---------------------------------------------------------:.%@%@%@+..@@%@@@@.     
+     .+@#..*@#:--------------------------------------------------------::%@+=.+@%.:@@-:@@*.     
+     ...:#@@:.:-------------------------------------------------------:-*:-@@@@..@*-%@@@...     
+     .@@@@...:-------------------------------------------------------::+-+-....##-::*=...:.     
+     .#@#%@@..:--------------------------------------------------:...-#:=*:+@%*=:-%@:.:---.     
+     ..*@+*@@..------------------------------------------------:..%#%%::=#=::-=+%@:..-----.     
+     ...+@=+@@..:--------------------------------------------:..*%%+-:=*#=**##:....-------.     
+     .-:.@%**@@-..-----------------------------------------:..*@%+--=+++=**=:-*@%:.:------.     
+     .--..@%=+%@#.:--------------------------------------...@@%=-.:::::...:=#@*:=@@..:----.     
+     .---.:@+-=#@-..........:-----------------------:....:@%+=::--=+*#@@@--:::+#=:=%+..---.     
+     .---:.#@==+%@@@@@@@##=..........................-*@@#+---::=*@=---:=##-+-.:=%=:#%...:.     
+     .----.:@##**+==++*#%@@@@@@@@@@@@@@@@@@@@@@@@@@@%@%+==--===+%==:====-=*@:-#-::+#==@@-..     
+     .----.-@+****#***++++==+====-=------------:::%@@::-===-=-=#+-:==-::--===++*@+::+@+=+@.     
+     .----.+@#**+++++++++=====++=================:*-@:.::::=+=+=--::----*#%@@%#+--##:::#%*.     
+     .----..@%*+++++++=+++++++++++++=======+====-:=@+@=:--:::*%@@@@@@@@@@:.....=%#*%@@#*...     
+     .----:.=@*++**+***+++++=+==========+========+-=%@@@@@@@@#...........::---:.........:-.     
+     .-----:.@@**++**+=***+++++**######**=+=+==+=**=+*...+@+*..:-:------------------------.     
+     .------..@@++*++=+@*@@@@@@@@@@%%%%*@*++===+=%*=*@.......:----------------------------.     
+     .-------..@#+*#=+#@.-#.............-@+++==-=%*=+@.:----------------------------------.     
+     .--------.*@#*++++@:-#+.:---------:.@#=++===#*==@-.----------------------------------.     
+     .--------..#@++*++%@:=%+......::---.=@*=+===+#+-*#.....:-----------------------------.     
+     .---------..@*=+===%%--+#@@@#+:......:@==++==**+=+%@@=:.......:----------------------.     
+     .---------.:@%==+++=*@#****%@@@@@@@::.%*--=--=*##%%%@@@@@@@@@=-----------------------.     
+     .--------:.*@@#*===+++*%#=:........::.@%=-===--+=......:-...::-----------------------.     
+     .--------::@@*=**#+---==+*%@@@@@*:...+%**+=--=-=+#%@%+.......:-----------------------.     
+     .---------.=@@@@@@@%*+==++**+=+*@@@@+@@+===++=----===*#@@@%@:..:---------------------.     
+     .---------:.......=%@@@@%%%#@@@@@@@#..-@@@@%##*+==--==+===+*@@#----------------------.     
+     .--------------::............--......:......:=*#%%##***%@%@%#+.:=--------------------.     
+     ......................................................................................
+     
+     "
+}
 function verificarip {
 if [[ $direccion =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
 then
         n=1
+        ok=0
         until [ $n -eq 5 ]
         do
                 octeto=$(echo $direccion | cut -d'.' -f $n)
                 if ((octeto < 0 || octeto > 255))
                 then
-                        return 1
-                else
-                    return 0
+                        ok=1
                 fi
                 n=$(( $n+1 ))
         done
 else
-        return 1
+        ok=1
 fi
 }
 
 # ESCANEOPUERTOS
 function escaneopuertos {
-        echo "---------------------------------------------------"
-        echo "          Detección de puertos abiertos             "
-        echo "---------------------------------------------------"
-        echo "Iniciando el escaneo de puertos..."
+         echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+        echo -e "          \e[1;39mDetección de puertos abiertos\e[0m             "
+         echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+        echo "     Iniciando el escaneo de puertos..."
         echo " "
         IFS=
         while read pu
         do
                 for j in {79..81} #CAMBIAR A TODO EL RANGO DE PUERTOS
                 do 
-                        echo "Escaneando puerto $j en $pu..."
+                        echo -e "Escaneando puerto $j en \e[1;39;45m$pu...\e[0m"
                         nc -zv -w1 $pu $j 2>/dev/null
                         
                 if [ $? -eq 0 ]
                 then
-                        echo "Puerto $j abierto"
+                        echo -e "\e[33mPuerto $j:\e[0m"
+                        echo -e "Estado: \e[1;32mABIERTO\e[0m"
                         if [ -f "tcp.csv" ]
                         then
                                 SERVICIO=$(grep ",$j," tcp.csv | cut -d',' -f3)
-                                echo "Servicio: $SERVICIO"
+                                echo -e "Servicio: \e[1;33m$SERVICIO\e[0m"
+                                echo " "
                         else
-                                echo "Servicio desconocido. No se pudo encontrar el archivo tcp.csv"
+                                echo -e "\e[1;33mServicio desconocido. \e[1;31mNo se pudo encontrar el archivo tcp.csv\e[0m"
+                                echo " "
                         fi
                 else
-                        echo "Puerto $j cerrado"
+                        echo -e "\e[33mPuerto $j:\e[0m"
+                        echo -e "Estado: \e[31mCERRADO\e[0m"
                         echo " "
                 fi
                 done
@@ -60,11 +98,17 @@ function escaneopuertos {
 # PING IPS/24
 function rastreoips24 {
 subred=$(echo $direccion | cut -d'.' -f 1-3)
-                echo $subred
+                #echo $subred
                 redes_encontradas="redes_encontradas.txt"
                 > $redes_encontradas
                 
                 > $archivo_usuario
+                echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                echo -e "          \e[1;39mDetección de equipos conectados\e[0m             "
+                echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                echo "     Iniciando el escaneo de equipos..."
+                echo " "
+                echo "Escaneando red $subred..."
                 for i in {20..26}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
                 do
                         ttl=$(ping -w 1 -c 1 $subred.$i | grep -oP 'ttl=\K\d+')
@@ -72,21 +116,62 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                         if [ $? -eq 0 ]
                         then
                                 echo $subred.$i >> "$redes_encontradas"
-                                echo " /=== DIRECCION $subred.$i ===\ " >> $archivo_usuario
-                                echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
-                                echo " "
-                                echo -e "\e[32m Equipo encontrado en la dirección \e[1;32m$subred.$i\e[0m"
+                                
+                                #echo -e "\e[2;33m----------------------------------------------------\e[0m"
+                                #echo " "
+                                echo -e "\e[32m[+] Equipo encontrado en la dirección \e[1;32m$subred.$i\e[0m"
                                 if [ $ttl -ge 127 ]
                                 then
-                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mWindows\e[0m"
-                                        echo "TTL = $ttl -> Windows" >> $archivo_usuario
+                                        echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                        echo -e "Sistema operativo: \e[5;35mWindows\e[0m"
+                                       
+                                        ### CSV O JSON
+                                        case $usrext in
+                                                csv)
+                                                echo "$subred.$i,$ttl,Windows" >> $archivo_usuario;;
+                                                
+                                                json)
+                                                echo "{"Direccion":{"IP":"$subred.$i","TTL":"$ttl","SO":"Windows"}}" >> $archivo_usuario;;
+                                                *)
+                                                echo " === $subred.$i === " >> $archivo_usuario
+                                                echo "TTL = $ttl" >> $archivo_usuario
+                                                echo "Sistema Operativo: Windows" >> $archivo_usuario
+                                                echo " " >> $archivo_usuario;;
+                                        esac  
+                                
                                 elif [ $ttl -le 64 ]
                                 then
-                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mLinux\e[0m"
-                                        echo "TTL = $ttl -> Linux" >> $archivo_usuario
+                                        echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                        echo -e "Sistema operativo: \e[5;36mLinux\e[0m"
+                                        ### CSV O JSON
+                                        case $usrext in
+                                                csv)
+                                                echo "$subred.$i,$ttl,Linux" >> $archivo_usuario;;
+                                                
+                                                json)
+                                                echo "{"Direccion":{"IP":"$subred.$i","TTL":"$ttl","SO":"Linux"}}" >> $archivo_usuario;;
+                                                *)
+                                                echo " === $subred.$i === " >> $archivo_usuario
+                                                echo "TTL = $ttl" >> $archivo_usuario
+                                                echo "Sistema Operativo: Linux" >> $archivo_usuario
+                                                echo " " >> $archivo_usuario;;
+                                        esac
                                 else
-                                        echo -e "Sistema operativo desconocido detectado con TTL \e[1;31mm$ttl \e[0m"
-                                        echo "TTL = $ttl -> Desconocido" >> $archivo_usuario
+                                        echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                        echo -e "Sistema operativo: \e[1;33mDesconocido\e[0m"
+                                        ### CSV O JSON
+                                        case $usrext in
+                                                csv)
+                                                echo "$subred.$i,$ttl,Desconocido" >> $archivo_usuario;;
+                                                
+                                                json)
+                                                echo "{"Direccion":{"IP":"$subred.$i","TTL":"$ttl","SO":"Desconocido"}}" >> $archivo_usuario;;
+                                                *)
+                                                echo " === $subred.$i === " >> $archivo_usuario
+                                                echo "TTL = $ttl" >> $archivo_usuario
+                                                echo "Sistema Operativo: Desconocido" >> $archivo_usuario
+                                                echo " " >> $archivo_usuario;;
+                                        esac
                                 fi
                                 echo " "
                         fi
@@ -96,14 +181,19 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
 # PING IPS/16
 function rastreoips16 {
 subred=$(echo $direccion | cut -d'.' -f 1-2)
-                echo $subred
+                #echo $subred
                 redes_encontradas="redes_encontradas.txt"
                 > $redes_encontradas
                 
                 > $archivo_usuario
-                for j in {0..2}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
+                 echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                echo -e "          \e[1;39mDetección de equipos conectados\e[0m             "
+                echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                echo "     Iniciando el escaneo de equipos..."
+                echo " "
+                for j in {109..111}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
                 do
-                        i=1
+                        i=1 #CAMBIAR PARA EL RANGO
                         echo "Escaneando red $subred.$j.0..."
                         until [ $i -eq 25 ] #CAMBIAR PARA EL RANGO
                         do
@@ -112,21 +202,61 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
                                 if [ $? -eq 0 ]
                                 then
                                         echo $subred.$j.$i >> "$redes_encontradas"
-                                        echo " /=== DIRECCION $subred.$j.$i ===\ " >> $archivo_usuario
-                                        echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
-                                        echo " "
-                                        echo -e "\e[32m Equipo encontrado en la dirección \e[1;32m$subred.$j.$i\e[0m"
+                                        
+                                        #echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                                        #echo " "
+                                        echo -e "\e[32m[+] Equipo encontrado en la dirección \e[1;32m$subred.$j.$i\e[0m"
                                         if [ $ttl -ge 127 ]
                                         then
-                                                echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mWindows\e[0m"
-                                                echo "TTL = $ttl -> Windows" >> $archivo_usuario
+                                                echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                                echo -e "Sistema operativo: \e[5;35mWindows\e[0m"
+                                               ### CSV O JSON
+                                        case $usrext in
+                                                csv)
+                                                echo "$subred.$j.$i,$ttl,Windows" >> $archivo_usuario;;
+                                                
+                                                json)
+                                                echo "{"Direccion":{"IP":"$subred.$j.$i","TTL":"$ttl","SO":"Windows"}}" >> $archivo_usuario;;
+                                                *)
+                                                echo " === $subred.$j.$i === " >> $archivo_usuario
+                                                echo "TTL = $ttl" >> $archivo_usuario
+                                                echo "Sistema Operativo: Windows" >> $archivo_usuario
+                                                echo " " >> $archivo_usuario;;
+                                        esac  
+
                                         elif [ $ttl -le 64 ]
                                         then
-                                                echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mLinux\e[0m"
-                                                echo "TTL = $ttl -> Linux" >> $archivo_usuario
+                                                echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                                echo -e "Sistema operativo: \e[5;36mLinux\e[0m"
+                                                ### CSV O JSON
+                                                case $usrext in
+                                                        csv)
+                                                        echo "$subred.$j.$i,$ttl,Linux" >> $archivo_usuario;;
+                                                        
+                                                        json)
+                                                        echo "{"Direccion":{"IP":"$subred.$j.$i","TTL":"$ttl","SO":"Linux"}}" >> $archivo_usuario;;
+                                                        *)
+                                                        echo " === $subred.$j.$i === " >> $archivo_usuario
+                                                        echo "TTL = $ttl" >> $archivo_usuario
+                                                        echo "Sistema Operativo: Linux" >> $archivo_usuario
+                                                        echo " " >> $archivo_usuario;;
+                                                esac  
                                         else
-                                                echo -e "Sistema operativo desconocido detectado con TTL \e[1;31mm$ttl \e[0m"
-                                                echo "TTL = $ttl -> Desconocido" >> $archivo_usuario
+                                                echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                                echo -e "Sistema operativo: \e[1;33mDesconocido\e[0m"
+                                                ### CSV O JSON
+                                                case $usrext in
+                                                        csv)
+                                                        echo "$subred.$j.$i,$ttl,Desconocido" >> $archivo_usuario;;
+                                                        
+                                                        json)
+                                                        echo "{"Direccion":{"IP":"$subred.$j.$i","TTL":"$ttl","SO":"Desconocido"}}" >> $archivo_usuario;;
+                                                        *)
+                                                        echo " === $subred.$j.$i === " >> $archivo_usuario
+                                                        echo "TTL = $ttl" >> $archivo_usuario
+                                                        echo "Sistema Operativo: Desconocido" >> $archivo_usuario
+                                                        echo " " >> $archivo_usuario;;
+                                                esac
                                         fi
                                         echo " "
                                 fi
@@ -138,16 +268,21 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
 # PING IPS/8
 function rastreoips8 {
 subred=$(echo $direccion | cut -d'.' -f 1)
-                echo $subred
+                #echo $subred
                 redes_encontradas="redes_encontradas.txt"
                 > $redes_encontradas
                 
                 > $archivo_usuario
+                 echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                echo -e "          \e[1;39mDetección de equipos conectados\e[0m             "
+                echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                echo "     Iniciando el escaneo de equipos..."
+                echo " "
                 for k in {168..169}  #CAMBIAR PARA EL RANGO
                 do
-                        j=0
+                        j=109 #CAMBIAR PARA EL RANGO
                         echo "Escaneando red $subred.$k.0.0..."
-                        until [ $j -eq 2 ] #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!   
+                        until [ $j -eq 111 ] #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!   
                         do
                                 i=1
                                 echo "Escaneando red $subred.$k.$j.0..."
@@ -158,21 +293,59 @@ subred=$(echo $direccion | cut -d'.' -f 1)
                                         if [ $? -eq 0 ]
                                         then
                                                 echo $subred.$k.$j.$i >> "$redes_encontradas"
-                                                echo " /=== DIRECCION $subred.$k.$j.$i ===\ " >> $archivo_usuario
-                                                echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
-                                                echo " "
-                                                echo -e "\e[32m Equipo encontrado en la dirección \e[1;32m$subred.$k.$j.$i\e[0m"
+                                                #echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+                                                #echo " "
+                                                echo -e "\e[32m[+] Equipo encontrado en la dirección \e[1;32m$subred.$k.$j.$i\e[0m"
                                                 if [ $ttl -ge 127 ]
                                                 then
-                                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mWindows\e[0m"
-                                                        echo "TTL = $ttl -> Windows" >> $archivo_usuario
+                                                        echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                                        echo -e "Sistema operativo: \e[5;35mWindows\e[0m"
+                                                         ### CSV O JSON
+                                                        case $usrext in
+                                                                csv)
+                                                                echo "$subred.$k.$j.$i,$ttl,Windows" >> $archivo_usuario;;
+                                                                
+                                                                json)
+                                                                echo "{"Direccion":{"IP":"$subred.$k.$j.$i","TTL":"$ttl","SO":"Windows"}}" >> $archivo_usuario;;
+                                                                *)
+                                                                echo " === $subred.$k.$j.$i === " >> $archivo_usuario
+                                                                echo "TTL = $ttl" >> $archivo_usuario
+                                                                echo "Sistema Operativo: Windows" >> $archivo_usuario
+                                                                echo " " >> $archivo_usuario;;
+                                                        esac  
                                                 elif [ $ttl -le 64 ]
                                                 then
-                                                        echo -e "Sistema operativo detectado con TTL \e[1;32m$ttl => \e[1;33mLinux\e[0m"
-                                                        echo "TTL = $ttl -> Linux" >> $archivo_usuario
+                                                        echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                                        echo -e "Sistema operativo: \e[5;36mLinux\e[0m"
+                                                         ### CSV O JSON
+                                                        case $usrext in
+                                                                csv)
+                                                                echo "$subred.$k.$j.$i,$ttl,Linux" >> $archivo_usuario;;
+                                                                
+                                                                json)
+                                                                echo "{"Direccion":{"IP":"$subred.$k.$j.$i","TTL":"$ttl","SO":"Linux"}}" >> $archivo_usuario;;
+                                                                *)
+                                                                echo " === $subred.$k.$j.$i === " >> $archivo_usuario
+                                                                echo "TTL = $ttl" >> $archivo_usuario
+                                                                echo "Sistema Operativo: Linux" >> $archivo_usuario
+                                                                echo " " >> $archivo_usuario;;
+                                                        esac
                                                 else
-                                                        echo -e "Sistema operativo desconocido detectado con TTL \e[1;31mm$ttl \e[0m"
-                                                        echo "TTL = $ttl -> Desconocido" >> $archivo_usuario
+                                                        echo -e "TTL = \e[1;32m$ttl\e[0m"
+                                                        echo -e "Sistema operativo: \e[1;33mDesconocido\e[0m"
+                                                        ### CSV O JSON
+                                                        case $usrext in
+                                                                csv)
+                                                                echo "$subred.$k.$j.$i,$ttl,Desconocido" >> $archivo_usuario;;
+                                                                
+                                                                json)
+                                                                echo "{"Direccion":{"IP":"$subred.$k.$j.$i","TTL":"$ttl","SO":"Desconocido"}}" >> $archivo_usuario;;
+                                                                *)
+                                                                echo " === $subred.$k.$j.$i === " >> $archivo_usuario
+                                                                echo "TTL = $ttl" >> $archivo_usuario
+                                                                echo "Sistema Operativo: Desconocido" >> $archivo_usuario
+                                                                echo " " >> $archivo_usuario;;
+                                                        esac
                                                 fi
                                                 echo " "
                                         fi
@@ -183,42 +356,72 @@ subred=$(echo $direccion | cut -d'.' -f 1)
                 done
                 }
 
+
 ## CÓDIGO
 hora_ini=$(date +%s)
+dibujo
 read -p "Introduce una dirección de red " usrred
+
+barra=$(echo $usrred | cut -d'/' -f 2)
+direccion=$(echo $usrred | cut -d'/' -f 1)
+## ERROR SI LA IP NO ESTÁ BIEN
 verificarip
-if [ $? -ne 0 ]
+if [ $ok -ne 0 ]
 then
-    echo "Esa ip no esta bien, prueba de nuevo"
-
+        echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+        echo -e "          \e[1;39mERROR EN LA EJECUCIÓN\e[0m             "
+                echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+    echo -e "\e[31mEl formato de la dirección IP introducida no es correcto.\e[0m"
+    echo -e "Algo está mal en la dirección \e[1;31m$usrred\e[0m"
+    echo " "
+    echo -e "\e[33mComprueba que la barra sea /8, /16 o /24 y que el rango de la red esté entre 0 y 255.\e[0m"
+        echo " "
+        exit
 fi
-echo "Dirección bien" 
-read -p "Introduce un nombre de archivo para guardar los resultados: " usrfile
-read -p "Elige la extensión del archivo de resultados (csv o json): " usrext
+echo -e "Introduce un \e[0;45mnombre de archivo\e[0m para guardar los resultados \e[1;33m(Si está vacío se guardará como \e[0;45mdefaultresults\e[0m\e[1;33m)\e[0m: "
 
-echo $usrfile
+read usrfile
+# AQUI
+if [ -z "$usrfile" ]
+then
+        usrfile=defaultresults
+fi
+echo -e "Elige la \e[0;45mextensión del archivo\e[0m de resultados: \e[1;33mcsv\e[0m o \e[1;33mjson\e[0m (Dejar vacío para formato legible sin extensión): "
+read usrext
+echo " "
+
+
+
+
+if [ ! -f $redes_encontradas ]
+then
+        touch $redes_encontradas
+fi
+
+
 case $usrext in
         csv)
-        echo "$usrfile"
-        archivo_usuario=$usrfile.csv
-        echo "1. $archivo_usuario"
+        archivo_usuario=./logs/$usrfile.csv
+        if [ ! -d ./logs/ ]
+        then
+                mkdir logs
+        fi
         if [ ! -f $archivo_usuario ]
         then
                 touch $archivo_usuario
         fi
-        echo "Los resultados se guardarán en $archivo_usuario";;
+        echo -e "Los resultados se guardarán en \e[0;45m$archivo_usuario\e[0m";;
         json)
-        archivo_usuario="$usrfile.json"
-        echo "Los resultados se guardarán en $usrfile.json";;
+        archivo_usuario=./logs/$usrfile.json
+        echo -e "Los resultados se guardarán en \e[0;45m$archivo_usuario\e[0m";;
         *)
-        archivo_usuario="$usrfile"
-        echo "Los resultados se guardarán en $usrfile";;
+        archivo_usuario=./logs/$usrfile
+        echo -e "Los resultados se guardarán en \e[0;45m$archivo_usuario\e[0m";;
 esac
 
-echo "2. $archivo_usuario"
-barra=$(echo $usrred | cut -d'/' -f 2)
-direccion=$(echo $usrred | cut -d'/' -f 1)
-echo $barra
+
+
+
 # SELECTOR SEGÚN BARRA
 case $barra in
         24)
@@ -228,7 +431,15 @@ case $barra in
         8)
                 rastreoips8;;
         *)
-             echo "Direccion no valida";;
+             echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+        echo -e "          \e[1;39mERROR EN LA EJECUCIÓN\e[0m             "
+                echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+    echo -e "\e[31mEl formato de la barra de la dirección IP introducida no es correcto.\e[0m"
+    echo -e "Algo está mal en la barra \e[1;31m/$barra\e[0m"
+    echo " "
+    echo -e "\e[33mComprueba que la barra sea /8, /16 o /24.\e[0m"
+        echo " "
+        exit
 esac   
 
 escaneopuertos
@@ -237,6 +448,14 @@ escaneopuertos
 hora_fin=$(date +%s)
 tiempo_ejecucion=$(($hora_fin - $hora_ini))
 
-echo "El programa ha tardado $tiempo_ejecucion segundos en ejecutarse"
-echo "Salida"
+        echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+        echo -e "          \e[1;32mEscaneo de Red Completado\e[0m            "
+        echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+        echo "  [-] Equipos encontrados en la red:"
+        cat $redes_encontradas
+        echo " "
+        echo -e "Los resultados se han guardado en el fichero \e[1;32m$usrfile.$usrext\e[0m"
+echo -e "El programa ha tardado \e[1;32m$tiempo_ejecucion segundos\e[0m en ejecutarse"
+echo -e "\e[1;36mGracias por usar nuestro programa\e[0m"
+echo " "
 ```
