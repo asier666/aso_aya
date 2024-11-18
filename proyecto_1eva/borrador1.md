@@ -3,7 +3,7 @@ CÓDIGO
 #!/bin/bash
 
 # FUNCIONES
-# FUNCION VERIFICAR IP
+# FUNCION Dibujo
 function dibujo {
         echo "
      ......................................................................................     
@@ -39,6 +39,8 @@ function dibujo {
      
      "
 }
+
+# VERIFICAR IP CORRECTA
 function verificarip {
 if [[ $direccion =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
 then
@@ -46,6 +48,7 @@ then
         ok=0
         until [ $n -eq 5 ]
         do
+                #Comprueba que cada octeto esté dentro del rango
                 octeto=$(echo $direccion | cut -d'.' -f $n)
                 if ((octeto < 0 || octeto > 255))
                 then
@@ -68,6 +71,7 @@ function escaneopuertos {
         IFS=
         while read pu
         do
+                # Rango de puertos a escanear
                 for j in {79..81} #CAMBIAR A TODO EL RANGO DE PUERTOS
                 do 
                         echo -e "Escaneando puerto $j en \e[1;39;45m$pu...\e[0m"
@@ -109,6 +113,8 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                 echo "     Iniciando el escaneo de equipos..."
                 echo " "
                 echo "Escaneando red $subred..."
+
+                # 192.168.0.XX
                 for i in {20..26}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
                 do
                         ttl=$(ping -w 1 -c 1 $subred.$i | grep -oP 'ttl=\K\d+')
@@ -191,10 +197,14 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
                 echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
                 echo "     Iniciando el escaneo de equipos..."
                 echo " "
+
+                # 192.168.XXX.0
                 for j in {109..111}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
                 do
                         i=1 #CAMBIAR PARA EL RANGO
                         echo "Escaneando red $subred.$j.0..."
+
+                        # 192.168.0.XXX
                         until [ $i -eq 25 ] #CAMBIAR PARA EL RANGO
                         do
                                 ttl=$(ping -w 1 -c 1 $subred.$j.$i | grep -oP 'ttl=\K\d+')
@@ -278,14 +288,20 @@ subred=$(echo $direccion | cut -d'.' -f 1)
                 echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
                 echo "     Iniciando el escaneo de equipos..."
                 echo " "
+
+                # 192.XXX.0.0
                 for k in {168..169}  #CAMBIAR PARA EL RANGO
                 do
                         j=109 #CAMBIAR PARA EL RANGO
                         echo "Escaneando red $subred.$k.0.0..."
+
+                        # 192.168.XXX.0
                         until [ $j -eq 111 ] #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!   
                         do
                                 i=1
                                 echo "Escaneando red $subred.$k.$j.0..."
+
+                                # 192.168.0.XXX
                                 until [ $i -eq 25 ] #CAMBIAR PARA EL RANGO
                                 do
                                         ttl=$(ping -w 1 -c 1 $subred.$k.$j.$i | grep -oP 'ttl=\K\d+')
@@ -370,18 +386,19 @@ if [ $ok -ne 0 ]
 then
         echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
         echo -e "          \e[1;39mERROR EN LA EJECUCIÓN\e[0m             "
-                echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
-    echo -e "\e[31mEl formato de la dirección IP introducida no es correcto.\e[0m"
-    echo -e "Algo está mal en la dirección \e[1;31m$usrred\e[0m"
-    echo " "
-    echo -e "\e[33mComprueba que la barra sea /8, /16 o /24 y que el rango de la red esté entre 0 y 255.\e[0m"
+        echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
+        echo -e "\e[31mEl formato de la dirección IP introducida no es correcto.\e[0m"
+        echo -e "Algo está mal en la dirección \e[1;31m$usrred\e[0m"
+        echo " "
+        echo -e "\e[33mComprueba que la barra sea /8, /16 o /24 y que el rango de la red esté entre 0 y 255.\e[0m"
         echo " "
         exit
 fi
 echo -e "Introduce un \e[0;45mnombre de archivo\e[0m para guardar los resultados \e[1;33m(Si está vacío se guardará como \e[0;45mdefaultresults\e[0m\e[1;33m)\e[0m: "
 
 read usrfile
-# AQUI
+
+# Si no se introduce nombre, establecer a
 if [ -z "$usrfile" ]
 then
         usrfile=defaultresults
@@ -390,15 +407,13 @@ echo -e "Elige la \e[0;45mextensión del archivo\e[0m de resultados: \e[1;33mcsv
 read usrext
 echo " "
 
-
-
-
+# Crear archivo redes_encontradas.txt
 if [ ! -f $redes_encontradas ]
 then
         touch $redes_encontradas
 fi
 
-
+# Muestra dónde se guardan
 case $usrext in
         csv)
         archivo_usuario=./logs/$usrfile.csv
@@ -419,10 +434,7 @@ case $usrext in
         echo -e "Los resultados se guardarán en \e[0;45m$archivo_usuario\e[0m";;
 esac
 
-
-
-
-# SELECTOR SEGÚN BARRA
+# Rastreo IPs según barra
 case $barra in
         24)
                 rastreoips24;;
@@ -442,10 +454,12 @@ case $barra in
         exit
 esac   
 
+# Escaneo puertos
 escaneopuertos
 
-
 hora_fin=$(date +%s)
+
+# Calculo tiempo ejecución
 tiempo_ejecucion=$(($hora_fin - $hora_ini))
 
         echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
