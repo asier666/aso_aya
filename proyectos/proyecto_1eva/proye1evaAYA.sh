@@ -1,5 +1,3 @@
-CÓDIGO
-```bash
 #!/bin/bash
 
 # FUNCIONES
@@ -36,7 +34,8 @@ function dibujo {
      .---------:.......=%@@@@%%%#@@@@@@@#..-@@@@%##*+==--==+===+*@@#----------------------.     
      .--------------::............--......:......:=*#%%##***%@%@%#+.:=--------------------.     
      ......................................................................................
-     
+     .........................===\\\@@--DOGISH-ME NET-SCAN--@@///===.......................
+     ......................................................................................
      "
 }
 
@@ -72,7 +71,7 @@ function escaneopuertos {
         while read pu
         do
                 # Rango de puertos a escanear
-                for j in {79..81} #CAMBIAR A TODO EL RANGO DE PUERTOS
+                for j in {79..82}
                 do 
                         echo -e "Escaneando puerto $j en \e[1;39;45m$pu...\e[0m"
                         nc -zv -w1 $pu $j 2>/dev/null
@@ -102,10 +101,8 @@ function escaneopuertos {
 # PING IPS/24
 function rastreoips24 {
 subred=$(echo $direccion | cut -d'.' -f 1-3)
-                #echo $subred
                 redes_encontradas="redes_encontradas.txt"
                 > $redes_encontradas
-                
                 > $archivo_usuario
                 echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
                 echo -e "          \e[1;39mDetección de equipos conectados\e[0m             "
@@ -115,16 +112,13 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
                 echo "Escaneando red $subred..."
 
                 # 192.168.0.XX
-                for i in {20..26}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
+                for i in {0..66} # Hasta la 66
                 do
                         ttl=$(ping -w 1 -c 1 $subred.$i | grep -oP 'ttl=\K\d+')
                         ping -w 1 -c 1 $subred.$i > /dev/null
                         if [ $? -eq 0 ]
                         then
                                 echo $subred.$i >> "$redes_encontradas"
-                                
-                                #echo -e "\e[2;33m----------------------------------------------------\e[0m"
-                                #echo " "
                                 echo -e "\e[32m[+] Equipo encontrado en la dirección \e[1;32m$subred.$i\e[0m"
                                 if [ $ttl -ge 127 ]
                                 then
@@ -187,10 +181,8 @@ subred=$(echo $direccion | cut -d'.' -f 1-3)
 # PING IPS/16
 function rastreoips16 {
 subred=$(echo $direccion | cut -d'.' -f 1-2)
-                #echo $subred
                 redes_encontradas="redes_encontradas.txt"
                 > $redes_encontradas
-                
                 > $archivo_usuario
                  echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
                 echo -e "          \e[1;39mDetección de equipos conectados\e[0m             "
@@ -199,22 +191,19 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
                 echo " "
 
                 # 192.168.XXX.0
-                for j in {109..111}   #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!
+                for j in {109..111} # De 109 a 111
                 do
                         i=1 #CAMBIAR PARA EL RANGO
                         echo "Escaneando red $subred.$j.0..."
 
                         # 192.168.0.XXX
-                        until [ $i -eq 25 ] #CAMBIAR PARA EL RANGO
+                        until [ $i -eq 66 ] # Hasta la 66
                         do
                                 ttl=$(ping -w 1 -c 1 $subred.$j.$i | grep -oP 'ttl=\K\d+')
                                 ping -w 1 -c 1 $subred.$j.$i > /dev/null
                                 if [ $? -eq 0 ]
                                 then
                                         echo $subred.$j.$i >> "$redes_encontradas"
-                                        
-                                        #echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
-                                        #echo " "
                                         echo -e "\e[32m[+] Equipo encontrado en la dirección \e[1;32m$subred.$j.$i\e[0m"
                                         if [ $ttl -ge 127 ]
                                         then
@@ -224,7 +213,6 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
                                         case $usrext in
                                                 csv)
                                                 echo "$subred.$j.$i,$ttl,Windows" >> $archivo_usuario;;
-                                                
                                                 json)
                                                 echo "{"Direccion":{"IP":"$subred.$j.$i","TTL":"$ttl","SO":"Windows"}}" >> $archivo_usuario;;
                                                 *)
@@ -233,7 +221,6 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
                                                 echo "Sistema Operativo: Windows" >> $archivo_usuario
                                                 echo " " >> $archivo_usuario;;
                                         esac  
-
                                         elif [ $ttl -le 64 ]
                                         then
                                                 echo -e "TTL = \e[1;32m$ttl\e[0m"
@@ -242,7 +229,6 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
                                                 case $usrext in
                                                         csv)
                                                         echo "$subred.$j.$i,$ttl,Linux" >> $archivo_usuario;;
-                                                        
                                                         json)
                                                         echo "{"Direccion":{"IP":"$subred.$j.$i","TTL":"$ttl","SO":"Linux"}}" >> $archivo_usuario;;
                                                         *)
@@ -258,7 +244,6 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
                                                 case $usrext in
                                                         csv)
                                                         echo "$subred.$j.$i,$ttl,Desconocido" >> $archivo_usuario;;
-                                                        
                                                         json)
                                                         echo "{"Direccion":{"IP":"$subred.$j.$i","TTL":"$ttl","SO":"Desconocido"}}" >> $archivo_usuario;;
                                                         *)
@@ -278,10 +263,8 @@ subred=$(echo $direccion | cut -d'.' -f 1-2)
 # PING IPS/8
 function rastreoips8 {
 subred=$(echo $direccion | cut -d'.' -f 1)
-                #echo $subred
                 redes_encontradas="redes_encontradas.txt"
                 > $redes_encontradas
-                
                 > $archivo_usuario
                  echo -e "\e[2;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
                 echo -e "          \e[1;39mDetección de equipos conectados\e[0m             "
@@ -290,27 +273,25 @@ subred=$(echo $direccion | cut -d'.' -f 1)
                 echo " "
 
                 # 192.XXX.0.0
-                for k in {168..169}  #CAMBIAR PARA EL RANGO
+                for k in {168..169}  # De 168 a 169
                 do
                         j=109 #CAMBIAR PARA EL RANGO
                         echo "Escaneando red $subred.$k.0.0..."
 
                         # 192.168.XXX.0
-                        until [ $j -eq 111 ] #CAMBIAR PARA QUE HAGA TODO EL RANGO!!!   
+                        until [ $j -eq 111 ] # Desde la 109 hasta la 111 
                         do
                                 i=1
                                 echo "Escaneando red $subred.$k.$j.0..."
 
                                 # 192.168.0.XXX
-                                until [ $i -eq 25 ] #CAMBIAR PARA EL RANGO
+                                until [ $i -eq 66 ] # Hasta la 66
                                 do
                                         ttl=$(ping -w 1 -c 1 $subred.$k.$j.$i | grep -oP 'ttl=\K\d+')
                                         ping -w 1 -c 1 $subred.$k.$j.$i > /dev/null
                                         if [ $? -eq 0 ]
                                         then
                                                 echo $subred.$k.$j.$i >> "$redes_encontradas"
-                                                #echo -e "\e[5;35moxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxxoxxXXXxx\e[0m"
-                                                #echo " "
                                                 echo -e "\e[32m[+] Equipo encontrado en la dirección \e[1;32m$subred.$k.$j.$i\e[0m"
                                                 if [ $ttl -ge 127 ]
                                                 then
@@ -320,7 +301,6 @@ subred=$(echo $direccion | cut -d'.' -f 1)
                                                         case $usrext in
                                                                 csv)
                                                                 echo "$subred.$k.$j.$i,$ttl,Windows" >> $archivo_usuario;;
-                                                                
                                                                 json)
                                                                 echo "{"Direccion":{"IP":"$subred.$k.$j.$i","TTL":"$ttl","SO":"Windows"}}" >> $archivo_usuario;;
                                                                 *)
@@ -337,7 +317,6 @@ subred=$(echo $direccion | cut -d'.' -f 1)
                                                         case $usrext in
                                                                 csv)
                                                                 echo "$subred.$k.$j.$i,$ttl,Linux" >> $archivo_usuario;;
-                                                                
                                                                 json)
                                                                 echo "{"Direccion":{"IP":"$subred.$k.$j.$i","TTL":"$ttl","SO":"Linux"}}" >> $archivo_usuario;;
                                                                 *)
@@ -353,7 +332,6 @@ subred=$(echo $direccion | cut -d'.' -f 1)
                                                         case $usrext in
                                                                 csv)
                                                                 echo "$subred.$k.$j.$i,$ttl,Desconocido" >> $archivo_usuario;;
-                                                                
                                                                 json)
                                                                 echo "{"Direccion":{"IP":"$subred.$k.$j.$i","TTL":"$ttl","SO":"Desconocido"}}" >> $archivo_usuario;;
                                                                 *)
@@ -380,6 +358,7 @@ read -p "Introduce una dirección de red " usrred
 
 barra=$(echo $usrred | cut -d'/' -f 2)
 direccion=$(echo $usrred | cut -d'/' -f 1)
+
 ## ERROR SI LA IP NO ESTÁ BIEN
 verificarip
 if [ $ok -ne 0 ]
@@ -394,6 +373,7 @@ then
         echo " "
         exit
 fi
+
 echo -e "Introduce un \e[0;45mnombre de archivo\e[0m para guardar los resultados \e[1;33m(Si está vacío se guardará como \e[0;45mdefaultresults\e[0m\e[1;33m)\e[0m: "
 
 read usrfile
@@ -403,6 +383,7 @@ if [ -z "$usrfile" ]
 then
         usrfile=defaultresults
 fi
+
 echo -e "Elige la \e[0;45mextensión del archivo\e[0m de resultados: \e[1;33mcsv\e[0m o \e[1;33mjson\e[0m (Dejar vacío para formato legible sin extensión): "
 read usrext
 echo " "
@@ -428,9 +409,25 @@ case $usrext in
         echo -e "Los resultados se guardarán en \e[0;45m$archivo_usuario\e[0m";;
         json)
         archivo_usuario=./logs/$usrfile.json
+        if [ ! -d ./logs/ ]
+        then
+                mkdir logs
+        fi
+        if [ ! -f $archivo_usuario ]
+        then
+                touch $archivo_usuario
+        fi
         echo -e "Los resultados se guardarán en \e[0;45m$archivo_usuario\e[0m";;
         *)
         archivo_usuario=./logs/$usrfile
+        if [ ! -d ./logs/ ]
+        then
+                mkdir logs
+        fi
+        if [ ! -f $archivo_usuario ]
+        then
+                touch $archivo_usuario
+        fi
         echo -e "Los resultados se guardarán en \e[0;45m$archivo_usuario\e[0m";;
 esac
 
@@ -472,4 +469,3 @@ tiempo_ejecucion=$(($hora_fin - $hora_ini))
 echo -e "El programa ha tardado \e[1;32m$tiempo_ejecucion segundos\e[0m en ejecutarse"
 echo -e "\e[1;36mGracias por usar nuestro programa\e[0m"
 echo " "
-```
