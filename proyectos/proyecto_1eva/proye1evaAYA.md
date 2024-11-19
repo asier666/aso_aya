@@ -2,7 +2,7 @@
 
 [Volver al índice](../index.md)
 
-# Programa de Escaneo de Redes - DOGISH-ME NET-SCAN
+# Programa de Escaneo de Redes - DOGISH-ME NET-SCAN :pig_nose:
 ## Descripción General
 Este programa en Bash permite realizar un escaneo de redes para detectar equipos conectados y puertos abiertos en una red específica indicada por el usuario. La dirección de red introducida ha de estar en formato CIDR y acepta redes `/8`, `/16` y `/24`. El programa realizará un escaneo de los dispositivos conectados, así como un escaneo de puertos en cada dispositivo encontrado. Los resultados se pueden guardar en un archivo en formato CSV, JSON o archivo de texto con un diseño más legible.
 
@@ -13,7 +13,7 @@ Este programa en Bash permite realizar un escaneo de redes para detectar equipos
 - Archivo `tcp.csv` conteniendo la relación ``Número de puerto - Servicio`` Este archivo debe estar en la misma carpeta que el script.
 - Permisos de ejecución para el script.
 
-## Instrucciones de Uso
+## Instrucciones de Uso :dog2:
 
 1. **Ejecutar el script**: añadiendo permisos de ejecución al usuario si fuera necesario.
 2. **Introducir la Dirección de Red**: Cuando se solicite, introduce la dirección de red en ``formato CIDR`` (por ejemplo, 192.168.1.0/24). **Se comprobará si el formato y la dirección IP es válida**.
@@ -36,7 +36,7 @@ Sistema Operativo: Windows
 
 7. **Resultados**: Al finalizar, se mostrará el tiempo total de ejecución y se guardarán los resultados en el archivo especificado.
 
-## Funciones
+## Funciones :page_with_curl:
 
 ### dibujo
 **Descripción**: Muestra un arte ASCII en la terminal con el nombre del programa.
@@ -77,5 +77,5 @@ Sistema Operativo: Windows
 ### Tiempo de ejecución
 **Descripción**: finalmente se muestra el tiempo que ha tardado en ejecutarse el programa. Esto lo consigo almacenando el tiempo al iniciar el programa y restándoselo al tiempo almacenado cuando este termina.
 
-## Contacto
+## Contacto :feelsgood:
 ### Asier Yusto Abad - github.com/asier666 - 2024
