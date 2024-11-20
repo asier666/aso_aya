@@ -3,6 +3,9 @@
 [Volver al índice](../index.md)
 
 # Programa de Escaneo de Redes - DOGISH-ME NET-SCAN 
+
+[Enlace al código](./proye1evaAYA.sh)
+
 ## Descripción General :pig_nose:
 Este programa en Bash permite realizar un escaneo de redes para detectar equipos conectados y puertos abiertos en una red específica indicada por el usuario. La dirección de red introducida ha de estar en formato CIDR y acepta redes `/8`, `/16` y `/24`. El programa realizará un escaneo de los dispositivos conectados, así como un escaneo de puertos en cada dispositivo encontrado. Los resultados se pueden guardar en un archivo en formato CSV, JSON o archivo de texto con un diseño más legible.
 
