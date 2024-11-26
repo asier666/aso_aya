@@ -23,7 +23,8 @@ Se puede ejecutar un comando y mandarlo a una máquina u a otra.
 - WinRM (Windows Remote Management)
 
 Para configurar una máquina en modo CORE desde una máquina con interfaz Gráfica:
-Pantalla negra: Modo CORE | Pantalla azul: Modo Escritorio
+
+Pantalla negra: Modo CORE | Pantalla azul: Modo Escritorio:
 
 ### Equipo CORE (el que será gestionado):
 `Enable-PSRemoting -Force`
@@ -32,12 +33,13 @@ Pantalla negra: Modo CORE | Pantalla azul: Modo Escritorio
 
 - Si no está disponible el protocolo Kerberos, se usará **NTLM**, que sirve para autenticar un equipo en otro equipo remoto:
 
-En el **cliente** tendremos que añadir el **nombre del servidor** al fichero **TrustedHosts** para que reconozca a este y pueda ser gestionado de forma remota.
+En los **clientes** tendremos que añadir el **nombre del servidor** al fichero **TrustedHosts** para que reconozca a este y pueda ser gestionado de forma remota.
 
 ### Desde equipo Cliente (desde el que gestionaremos):
 Con `winrm get winrm/config/client` podemos ver la configuración de WinRM, y la lista de TrustedHosts
 
 Empleamos `set-Item WSMan:\localhost\Client\TrustedHosts Value "10.0.0.11"` 
+
 Se pueden poner distintos equipos separados por comas.
 
 
@@ -48,7 +50,7 @@ Invoke-Command -ComputerName 10.0.0.11 -Credential (Get-Credential) -ScriptBlock
 
 Si en lugar de enviar comandos, queremos **iniciar una sesión**:
 ```powershell
-Enter-PSSession -ComputerName 10.0.0.11 -Credential ( Get-Credential )
+Enter-PSSession -ComputerName 10.0.0.11 -Credential (Get-Credential)
 ```
 
 
@@ -57,12 +59,12 @@ Enter-PSSession -ComputerName 10.0.0.11 -Credential ( Get-Credential )
 Preparar nuestra versión core para poder administrarla desde la versión escritorio y nuestra máquina host.
 
 W2019 con escritorio: 
-```
+```powershell
 Set-Item WSMan:\localhost\Client\TrustedHosts -Value "172.25.0.62"
 ```
 
 Equipo Host:
+```powershell
+Set-Item WSMan:\localhost\Client\TrustedHosts -Value "172.25.0.62"
 ```
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "172.25.0.61"
-```
-Tuve que poner winrm quickconfig para activar el servicio.
+Tuve que poner ``winrm quickconfig`` para activar el servicio en el **Windows 11**.

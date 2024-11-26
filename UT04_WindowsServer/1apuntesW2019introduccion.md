@@ -18,7 +18,7 @@ Variable para que reinicie automáticamente:
 `Rename-Computer CORE-2019 -Restart`
 
 ### Cambiar Layout Teclado:
-`Set-WinUserLanguageList en-GB,en-US`
+`Set-WinUserLanguageList es-ES`
 
 ### Configurar IP:
 Al ser un servidor debe de tener una **IP estática**
