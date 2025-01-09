@@ -35,3 +35,12 @@ Pass:Villabalter1
 
 ``Get-ADUser`` : proporciona información sobre los usuarios
 ``New-ADUser`` : crea un usuario en el dominio
+
+
+
+
+Ámbito normal para grupo: Grupo **global**
+
+``Add-ADGroupMember`` : agrega un usuario a un grupo
+
+``Remove-ADGroupMember`` : elimina un usuario de un grupo, Si no queremos que nos pregunte confirmación añadimos: ``-Confirm:$false``
