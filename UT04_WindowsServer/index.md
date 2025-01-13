@@ -6,4 +6,6 @@
 
 ### [pr0403](./practicas/pr0403/pr0403.md) - Pipeline en Powerhsell
 
+### [pr0404](./practicas/pr0404/pr0404.md) - Administración remota del servidor
+
 ## [Volver al índice](../index.md)
