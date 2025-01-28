@@ -12,4 +12,7 @@ Se indican las características del centro educativo:
 - Cada curso tiene un aula propia con 15 equipos con Windows 10
 - Hay 15 profesores que pueden impartir clase en cualquier aula
 
-New-ADOrganizationalUnit -Name "ASIR" -Path "OU=DC=LAB,DC=LOCAL"
+
+### Creación Unidades Organizativas:
+
+New-ADOrganizationalUnit -Name "ASIR" -Path "DC=AYA,DC=LOCAL"
