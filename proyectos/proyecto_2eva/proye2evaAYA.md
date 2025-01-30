@@ -13,6 +13,85 @@ Se indican las características del centro educativo:
 - Hay 15 profesores que pueden impartir clase en cualquier aula
 
 
-### Creación Unidades Organizativas:
+## Creación Unidades Organizativas:
 
-New-ADOrganizationalUnit -Name "ASIR" -Path "DC=AYA,DC=LOCAL"
+Contenido del fichero ``uo.csv``:
+```
+name
+ASIR
+SMR
+DAM
+DAW
+```
+
+Contenido de `scriptUO.ps1`:
+```powershell
+# author: activedirectorypro.com
+# This script is used for creating bulk organizational units.
+
+# Importar módulo ActiveDirectory
+Import-Module activedirectory
+
+# Guardamos el fichero csv en la variable $ADou. 
+$ADou = Import-csv Z:\uo2.csv
+
+# Para cada línea
+foreach ($ou in $ADou)
+{
+# Asignamos cada nombre del csv a la variable $name.
+$name=$ou.name
+# Creamos cada OU por cada $name del CSV.
+New-ADOrganizationalUnit -name $name -path "DC=aya,DC=local"
+# Crear las carpetas "Primero" y "Segundo" en cada UO del CSV:
+New-ADOrganizationalUnit -name "Primero" -path "OU=$($name),DC=aya,DC=local"
+New-ADOrganizationalUnit -name "Segundo" -path "OU=$($name),DC=aya,DC=local"
+}
+```
+
+
+OU=Primero,OU=ASIR,DC=aya,DC=local
+
+## Script Alumnos
+```powershell
+Import-Module ActiveDirectory
+$ADUsers = Import-Csv "Z:\alumnosTEST.csv" -Delimiter ","
+
+$DOM = "aya.local"
+foreach ($User in $ADUsers){
+    try{
+        $nombreUsu = $User.Nombre
+        $recorte = $nombreUsu.Substring(0, [Math]::Min($nombreUsu.Length, 1))
+        $username = "$($recorte)$($User.'Primer Apellido')"
+
+        $UserConfig = @{
+           GivenName= $User.Nombre
+           Name= "$($User.Nombre) $($User.'Primer Apellido') $($User.'Segundo Apellido')"    
+                    #Nombre PrimerApellido SegundoApellido` (NOMBRE COMPLETO)
+                # username HECHO
+           SamAccountName= $username #Nombre.PrimerApellido (NOMBRE INICIO DE SESIÓN)
+           Surname= "$($User.'Primer Apellido') $($User.'Segundo Apellido')"
+                #Primer Apellido, Segundo Apellido (APELLIDOS)
+               # USERPRINCIPAL NAME HECHO 
+           UserPrincipalName= "$($username)@$($DOM)"  #(NOMBRE INICIO DE SESIÓN + DOM)
+           Path= "OU=$($User.Curso),OU=$($User.Ciclo),DC=aya,DC=local" #(RUTA)
+        }
+        New-ADUser @UserConfig
+    }
+        catch {Write-Host "Fallo al crear usuario $($User.Nombre) - $_"}
+    }
+```
+Nombre,Primer Apellido,Segundo Apellido,Ciclo,Curso
+María,Torres,Vázquez,ASIR,Primero
+## Usuario TEST
+DistinguishedName : CN=test garcia,OU=Primero,OU=ASIR,DC=aya,DC=local
+Enabled           : True
+GivenName         : test
+Name              : test garcia
+ObjectClass       : user
+ObjectGUID        : 3345a00e-77fc-41d0-bdcd-0015d364922e
+SamAccountName    : usertest
+SID               : S-1-5-21-96269640-80280514-4135821150-1118
+Surname           : garcia
+UserPrincipalName : usertest@aya.local
+
+``scriptALUMNOS.ps1`
