@@ -51,8 +51,9 @@ New-ADOrganizationalUnit -name "Segundo" -path "OU=$($name),DC=aya,DC=local"
 
 OU=Primero,OU=ASIR,DC=aya,DC=local
 
-## Script Alumnos
+## Script Alumnos `scriptAlumnos.ps1`
 ```powershell
+Import-Module ActiveDirectory
 $ADUsers = Import-Csv "Z:\alumnosTEST.csv" -Delimiter ","
 
 $DOM = "aya.local"
@@ -81,7 +82,7 @@ foreach ($User in $ADUsers){
            AccountPassword= $password
            Enabled= $true
         }
-        New-Item -Path "\\share\users" -Name $UserConfig.SamAccountName -ItemType Directory -ErrorAction SilentlyContinue
+        New-Item -Path "\\share\users" -Name $($UserConfig.SamAccountName) -ItemType Directory -ErrorAction SilentlyContinue
         New-ADUser @UserConfig
 
         # Set-ADAccountPassword -Identity ($UserConfig.Path) -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
