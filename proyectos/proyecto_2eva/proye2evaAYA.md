@@ -53,7 +53,6 @@ OU=Primero,OU=ASIR,DC=aya,DC=local
 
 ## Script Alumnos
 ```powershell
-Import-Module ActiveDirectory
 $ADUsers = Import-Csv "Z:\alumnosTEST.csv" -Delimiter ","
 
 $DOM = "aya.local"
@@ -62,8 +61,10 @@ foreach ($User in $ADUsers){
         $nombreUsu = $User.Nombre
         $recorte = $nombreUsu.Substring(0, [Math]::Min($nombreUsu.Length, 1))
         $username = "$($recorte)$($User.'Primer Apellido')"
+        $password = ConvertTo-SecureString -String "Passw0rd!" -AsPlainText -Force
 
         $UserConfig = @{
+            
            GivenName= $User.Nombre
            Name= "$($User.Nombre) $($User.'Primer Apellido') $($User.'Segundo Apellido')"    
                     #Nombre PrimerApellido SegundoApellido` (NOMBRE COMPLETO)
@@ -74,14 +75,23 @@ foreach ($User in $ADUsers){
                # USERPRINCIPAL NAME HECHO 
            UserPrincipalName= "$($username)@$($DOM)"  #(NOMBRE INICIO DE SESIÓN + DOM)
            Path= "OU=$($User.Curso),OU=$($User.Ciclo),DC=aya,DC=local" #(RUTA)
+
+           HomeDirectory= "\\share\users\$($UserConfig.SamAccountName)"
+           HomeDrive= 'U:'
+           AccountPassword= $password
+           Enabled= $true
         }
+        New-Item -Path "\\share\users" -Name $UserConfig.SamAccountName -ItemType Directory -ErrorAction SilentlyContinue
         New-ADUser @UserConfig
+
+        # Set-ADAccountPassword -Identity ($UserConfig.Path) -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
     }
         catch {Write-Host "Fallo al crear usuario $($User.Nombre) - $_"}
     }
 ```
 Nombre,Primer Apellido,Segundo Apellido,Ciclo,Curso
 María,Torres,Vázquez,ASIR,Primero
+
 ## Usuario TEST
 DistinguishedName : CN=test garcia,OU=Primero,OU=ASIR,DC=aya,DC=local
 Enabled           : True
@@ -95,3 +105,14 @@ Surname           : garcia
 UserPrincipalName : usertest@aya.local
 
 ``scriptALUMNOS.ps1`
+
+## Ruta Perfil
+```powershell
+Get-ADUser -Filter * -Properties HomeDirectory
+```
+RUTA: `\\AYA-2019\carpetasPersonales$\fgonzalez`
+
+TRY:
+```
+New-Item -Path "\\share\users" -Name $UserName -ItemType Directory -ErrorAction SilentlyContinue
+```
