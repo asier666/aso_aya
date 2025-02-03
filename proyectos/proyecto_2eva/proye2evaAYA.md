@@ -51,6 +51,28 @@ New-ADOrganizationalUnit -name "Segundo" -path "OU=$($name),DC=aya,DC=local"
 
 OU=Primero,OU=ASIR,DC=aya,DC=local
 
+## Datos de usuarios a tener en cuenta:
+### Usuario TEST
+|nombre dato | valor |
+|-----------|------------|
+|DistinguishedName | CN=test garcia,OU=Primero,OU=ASIR,DC=aya,DC=local |
+|Enabled           | True|
+|GivenName         | test|
+|Name              | test garcia|
+|ObjectClass       | user|
+|ObjectGUID        | 3345a00e-77fc-41d0-bdcd-0015d364922e|
+|SamAccountName    | usertest
+|SID               | S-1-5-21-96269640-80280514-4135821150-1118
+|Surname           | garcia
+|UserPrincipalName | usertest@aya.local
+
+## Formato archivo alumnos.csv
+```
+Nombre,Primer Apellido,Segundo Apellido,Ciclo,Curso
+María,Torres,Vázquez,ASIR,Primero
+```
+
+
 ## Script Alumnos `scriptAlumnos.ps1`
 ```powershell
 Import-Module ActiveDirectory
@@ -64,56 +86,37 @@ foreach ($User in $ADUsers){
         $username = "$($recorte)$($User.'Primer Apellido')"
         $password = ConvertTo-SecureString -String "Passw0rd!" -AsPlainText -Force
 
-        $UserConfig = @{
+        # Crear CADA USUARIO
+        New-ADUser -GivenName "$($User.Nombre)" `
+                    -Name "$($User.Nombre) $($User.'Primer Apellido') $($User.'Segundo Apellido')"`
+                    -SamAccountName $username `
+                    -Surname "$($User.'Primer Apellido') $($User.'Segundo Apellido')" `
+                    -UserPrincipalName "$($username)@$($DOM)" `
+                    -Path "OU=$($User.Curso),OU=$($User.Ciclo),DC=aya,DC=local"`
+                    -HomeDirectory "\\AYA-2019\carpetasPersonales$`\$username" `
+                    -HomeDrive 'U:' `
+                    -AccountPassword $password `
+                    -Enabled $true
+
+            # Crear carpeta LOCAL para CADA USUARIO
+        New-Item -Path "C:\Shares\carpetasPersonales$" -Name $username -ItemType Directory -ErrorAction SilentlyContinue
             
-           GivenName= $User.Nombre
-           Name= "$($User.Nombre) $($User.'Primer Apellido') $($User.'Segundo Apellido')"    
-                    #Nombre PrimerApellido SegundoApellido` (NOMBRE COMPLETO)
-                # username HECHO
-           SamAccountName= $username #Nombre.PrimerApellido (NOMBRE INICIO DE SESIÓN)
-           Surname= "$($User.'Primer Apellido') $($User.'Segundo Apellido')"
-                #Primer Apellido, Segundo Apellido (APELLIDOS)
-               # USERPRINCIPAL NAME HECHO 
-           UserPrincipalName= "$($username)@$($DOM)"  #(NOMBRE INICIO DE SESIÓN + DOM)
-           Path= "OU=$($User.Curso),OU=$($User.Ciclo),DC=aya,DC=local" #(RUTA)
+        # Permitir acceso a la carpeta de CADA USUARIO
+            # Variable nombreUSUARIO
+        $user=$username
 
-           HomeDirectory= "\\share\users\$($UserConfig.SamAccountName)"
-           HomeDrive= 'U:'
-           AccountPassword= $password
-           Enabled= $true
-        }
-        New-Item -Path "\\share\users" -Name $($UserConfig.SamAccountName) -ItemType Directory -ErrorAction SilentlyContinue
-        New-ADUser @UserConfig
+        $acl = Get-Acl "C:\Shares\carpetasPersonales$`\$user"
+        $acl.SetAccessRuleProtection($true, $false)
+        $ar = New-Object System.Security.AccessControl.FileSystemAccessRule("$user", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $acl.SetAccessRule($ar)
 
-        # Set-ADAccountPassword -Identity ($UserConfig.Path) -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
+        # Asignar la ACL a la carpeta de CADA USUARIO
+        Set-Acl "\\AYA-2019\carpetasPersonales$`\$user" $acl
+
     }
         catch {Write-Host "Fallo al crear usuario $($User.Nombre) - $_"}
     }
 ```
-Nombre,Primer Apellido,Segundo Apellido,Ciclo,Curso
-María,Torres,Vázquez,ASIR,Primero
 
-## Usuario TEST
-DistinguishedName : CN=test garcia,OU=Primero,OU=ASIR,DC=aya,DC=local
-Enabled           : True
-GivenName         : test
-Name              : test garcia
-ObjectClass       : user
-ObjectGUID        : 3345a00e-77fc-41d0-bdcd-0015d364922e
-SamAccountName    : usertest
-SID               : S-1-5-21-96269640-80280514-4135821150-1118
-Surname           : garcia
-UserPrincipalName : usertest@aya.local
 
-``scriptALUMNOS.ps1`
 
-## Ruta Perfil
-```powershell
-Get-ADUser -Filter * -Properties HomeDirectory
-```
-RUTA: `\\AYA-2019\carpetasPersonales$\fgonzalez`
-
-TRY:
-```
-New-Item -Path "\\share\users" -Name $UserName -ItemType Directory -ErrorAction SilentlyContinue
-```
