@@ -1,7 +1,13 @@
 # Proyecto de la 2ª Evaluación
+Asier Yusto Abad
 
+Desarrollo de un dominio para centro educativo `AYA`
 
-## Situación inicial
+## Índice
+
+1. Archivos con los datos
+2. Scripts 
+
 
 Se indican las características del centro educativo:
 
@@ -12,10 +18,12 @@ Se indican las características del centro educativo:
 - Cada curso tiene un aula propia con 15 equipos con Windows 10
 - Hay 15 profesores que pueden impartir clase en cualquier aula
 
+## 1. Archivos con los datos
 
-## Creación Unidades Organizativas:
+### `uo.csv`:
+**Uso:** contiene los nombres de cada curso bajo la columna `name`, para su uso posterior en los scripts.
 
-Contenido del fichero ``uo.csv``:
+**Contenido:**
 ```
 name
 ASIR
@@ -24,51 +32,63 @@ DAM
 DAW
 ```
 
-## Crea las UO, con primero y segundo a partir del csv
+### `alumnos.csv`:
+**Uso:** contiene los datos de cada alumno con las columnas **Nombre**, **Primer Apellido**, **Segundo Apellido**, **Ciclo** y **Curso** para la creación de estos usuarios.
 
+**Contenido:**
+```
+Nombre,Primer Apellido,Segundo Apellido,Ciclo,Curso
+María,Torres,Vázquez,ASIR,Primero
+```
+
+## 2. Scripts
+
+### `scriptUO.ps1`
+
+#### Función:
 1. Crea la UO AULAS
 2. Crea las UO ASIR, SMR, DAM dentro de AULAS.
 3. Crea la UO CURSOS
-4. Crea las UO ASIR, SMR, DAM y DAW dentro de CURSO.
-5. Crea Primero y Segundo dentro de cada CURSO
-6. Crea 15 Equipos en cada AULA (ASI-01/ASI-15, DAM-01/DAM-15, DAW-01/DAW-15)
+4. Crea las UO ASIR, SMR, DAM y DAW dentro de CURSOS.
+5. Crea las UO Primero y Segundo dentro de cada CURSO
+6. Crea 15 Equipos en cada AULA, con nombres `ASI-01/ASI-15` para **ASIR**, `DAM-01/DAM-15` para **DAM**, etc...
 
-
-Contenido de `scriptUO.ps1`:
+#### Contenido de `scriptUO.ps1`:
 ```powershell
-# Importar módulo ActiveDirectory
 Import-Module activedirectory
 $ADou = Import-csv Z:\uo2.csv
-
-# Creo AULAS
+    # Creación UO AULAS
 New-ADOrganizationalUnit -name "AULAS" -path "DC=aya,DC=local"
-# Creo CURSOS
+    # Creación UO CURSOS
 New-ADOrganizationalUnit -name "CURSOS" -path "DC=aya,DC=local"
-# Para cada línea
-foreach ($ou in $ADou)
-{
-# Asignamos cada nombre del csv a la variable $name.
-$name=$ou.name
-# Creamos cada OU por cada $name del CSV.
-New-ADOrganizationalUnit -name $name -path "OU=CURSOS,DC=aya,DC=local"
-New-ADOrganizationalUnit -name $name -path "OU=AULAS,DC=aya,DC=local"
-    # Adición de Equipos a las Aulas
-    for ($i=1;$i -le 15;$i++){
-        $prefijo=$name.Substring(0, [Math]::Min($name.Length, 3))
-        if ($i -ge 10){
-            New-ADComputer -name "$($prefijo)-$i" -path "OU=$($name),OU=AULAS,DC=aya,DC=local"
-        } else {
-            New-ADComputer -name "$($prefijo)-0$i" -path "OU=$($name),OU=AULAS,DC=aya,DC=local"
+    # Para cada registro del CSV
+foreach ($ou in $ADou) {
+        # Asignamos cada nombre del csv a la variable $name.
+    $name=$ou.name
+        # Creamos cada OU por cada $name del CSV, una en CURSOS y otra en AULAS
+    New-ADOrganizationalUnit -name $name -path "OU=CURSOS,DC=aya,DC=local"
+    New-ADOrganizationalUnit -name $name -path "OU=AULAS,DC=aya,DC=local"
+        # Adición de los 15 Equipos a las Aulas
+        for ($i=1;$i -le 15;$i++){
+                # Cojo los 3 primeros carácteres del $name del CSV
+            $prefijo=$name.Substring(0, [Math]::Min($name.Length, 3))
+            if ($i -ge 10){
+                New-ADComputer -name "$($prefijo)-$i" -path "OU=$($name),OU=AULAS,DC=aya,DC=local"
+            } else {
+                New-ADComputer -name "$($prefijo)-0$i" -path "OU=$($name),OU=AULAS,DC=aya,DC=local"
+            }
         }
-    }
-# Crear las carpetas "Primero" y "Segundo" en cada UO del CSV:
-New-ADOrganizationalUnit -name "Primero" -path "OU=$($name),OU=CURSOS,DC=aya,DC=local"
-New-ADOrganizationalUnit -name "Segundo" -path "OU=$($name),OU=CURSOS,DC=aya,DC=local"
+    # Crear las carpetas "Primero" y "Segundo" en cada UO del CSV en CURSOS:
+    New-ADOrganizationalUnit -name "Primero" -path "OU=$($name),OU=CURSOS,DC=aya,DC=local"
+    New-ADOrganizationalUnit -name "Segundo" -path "OU=$($name),OU=CURSOS,DC=aya,DC=local"
 }
 ```
 
-## Crear la UO profesores y añade 15 profes a ella.
-`PROF_01 a PROF_15`
+### `scriptPROFES.ps1`
+#### Función:
+1. Crea la UO profesores y añade 15 profes a ella, llamándolos `PROF_01` a `PROF_15`
+
+#### Contenido:
 ```powershell
 Import-Module activedirectory
 New-ADOrganizationalUnit -name "PROFESORES" -path "DC=aya,DC=local"
@@ -84,57 +104,41 @@ for ($i=1;$i -le 15;$i++){
     }
 ```
 
+### `scriptPROFES.ps1`
 ## CARPETAS COMPARTIDAS EN GRUPO
-```
-Crea las carpetas y los grupos (CON LA RUTA MAL, CREO), pero se comparten las carpetas bien. Revisar.
-```
-```powershell
-# Importar el módulo de Active Directory
-Import-Module activedirectory
+#### Función:
+1. Crea los grupos ASIR, DAM, DAW, SMR.
+2. Crea y comparte las carpetas con cada grupo. (todos ven y usan todas las carpetas)
 
-# Guardamos el fichero csv en la variable $ADou. 
+#### Contenido:
+```powershell
+Import-Module activedirectory
 $ADou = Import-csv Z:\uo2.csv
 foreach ($ou in $ADou){
     $grupo=$ou.name
-    #("Grupo_ASIR", "Grupo_SMR", "Grupo_DAM", "Grupo_DAW")
-
+        #("Grupo_ASIR", "Grupo_SMR", "Grupo_DAM", "Grupo_DAW")
     $rutaBase = "C:\Shares\carpetasPersonales$`\"
     $rutaCarpeta = "SHARED_$grupo"
-    # Crear el grupo en Active Directory
-    New-ADGroup -Name $grupo -GroupScope Global -Path "OU=$($grupo),OU=CURSOS,DC=aya,DC=local" -Description "Grupo para $grupo"
-
-    # Crear la carpeta para el grupo
+        # Crear el grupo en Active Directory
+    if (-not (Get-ADGroup -Filter { Name -eq $grupo })) {
+       New-ADGroup -Name $grupo -GroupScope Global -Path "OU=$($grupo),OU=CURSOS,DC=aya,DC=local" -Description "Grupo para $grupo"
+    } else {
+        Write-Host "El grupo '$grupo' ya existe."
+    }
+        # Crear la carpeta para el grupo
     New-Item -Path $rutaBase$rutaCarpeta -ItemType Directory -Force
-
-    # Establecer permisos para la carpeta
+        # Establecer permisos para la carpeta
     $acl = Get-Acl $rutaBase$rutaCarpeta
-    $regla = New-Object System.Security.AccessControl.FileSystemAccessRule($grupo, "FullControl", "Allow")
+    $regla = New-Object System.Security.AccessControl.FileSystemAccessRule($grupo, "Modify", "Allow")
     $acl.SetAccessRule($regla)
     Set-Acl -Path $rutaBase$rutaCarpeta -AclObject $acl
-
-    # Compartir la carpeta
-    New-SmbShare -Name $grupo -Path $rutaBase -FullAccess $grupo
-
+        # Compartir la carpeta
+    New-SmbShare -Name $grupo -Path $rutaBase$rutaCarpeta -FullAccess "AYA\$grupo"
     # Mostrar mensaje de éxito
     Write-Host "Grupo '$grupo' creado y carpeta compartida '$rutaCarpeta' configurada."
 }
 ```
 
-
-
-## A PARTE
-```powershell
-New-ADUser -GivenName $nombre `
-    -Name "$($User.Nombre) $($User.'Primer Apellido') $($User.'Segundo Apellido')"`
-    -SamAccountName $nombre `
-    -Surname "$($User.'Primer Apellido') $($User.'Segundo Apellido')" `
-    -UserPrincipalName "$($nombre)@$($DOM)" `
-    -Path "OU=PROFESORES,DC=aya,DC=local"`
-    -HomeDirectory "\\AYA-2019\carpetasPersonales$`\$username" `
-    -HomeDrive 'U:' `
-    -AccountPassword $password `
-    -Enabled $true
-```
 
 
 ## Datos de usuarios a tener en cuenta:
@@ -152,20 +156,16 @@ New-ADUser -GivenName $nombre `
 |Surname           | garcia
 |UserPrincipalName | usertest@aya.local
 
-## Formato archivo alumnos.csv
-```
-Nombre,Primer Apellido,Segundo Apellido,Ciclo,Curso
-María,Torres,Vázquez,ASIR,Primero
-```
+
 
 
 ## Script Alumnos `scriptAlumnos.ps1`
 1. Introduce Alumnos desde alumnos.csv a su correspondiente curso y año en CURSOS
 2. Crea su carpeta compartida y le da los permisos necesarios.
+3. Mete a cada usuario en su correspondiente grupo
 ```powershell
 Import-Module ActiveDirectory
-$ADUsers = Import-Csv "Z:\alumnosTEST.csv" -Delimiter ","
-
+$ADUsers = Import-Csv "Z:\alumnos.csv" -Delimiter ","
 $DOM = "aya.local"
 foreach ($User in $ADUsers){
     try{
@@ -173,6 +173,7 @@ foreach ($User in $ADUsers){
         $recorte = $nombreUsu.Substring(0, [Math]::Min($nombreUsu.Length, 1))
         $username = "$($recorte)$($User.'Primer Apellido')"
         $password = ConvertTo-SecureString -String "Passw0rd!" -AsPlainText -Force
+        $ciclo = $User.Ciclo
         # Crear CADA USUARIO
         New-ADUser -GivenName "$($User.Nombre)" `
                     -Name "$($User.Nombre) $($User.'Primer Apellido') $($User.'Segundo Apellido')"`
@@ -180,55 +181,43 @@ foreach ($User in $ADUsers){
                     -Surname "$($User.'Primer Apellido') $($User.'Segundo Apellido')" `
                     -UserPrincipalName "$($username)@$($DOM)" `
                     -Path "OU=$($User.Curso),OU=$($User.Ciclo),OU=CURSOS,DC=aya,DC=local"`
-                    -HomeDirectory "\\AYA-2019\carpetasPersonales$`\$username" `
+                    -HomeDirectory "\\AYA-19\carpetasPersonales$`\$username" `
                     -HomeDrive 'U:' `
                     -AccountPassword $password `
                     -Enabled $true
             # Crear carpeta LOCAL para CADA USUARIO
         New-Item -Path "C:\Shares\carpetasPersonales$" -Name $username -ItemType Directory -ErrorAction SilentlyContinue 
-        # Permitir acceso a la carpeta de CADA USUARIO
-            # Variable nombreUSUARIO
+            # Permitir acceso a la carpeta de CADA USUARIO
         $user=$username
         $acl = Get-Acl "C:\Shares\carpetasPersonales$`\$user"
         $acl.SetAccessRuleProtection($true, $false)
         $ar = New-Object System.Security.AccessControl.FileSystemAccessRule("$user", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
         $acl.SetAccessRule($ar)
-        # Asignar la ACL a la carpeta de CADA USUARIO
+            # Asignar la ACL a la carpeta de CADA USUARIO
         Set-Acl "C:\Shares\carpetasPersonales$`\$user" $acl
-    }
 
-    Passw0rd
+        # Meter usuario en cada grupo
+        Add-ADGroupMember -Identity $ciclo -Members $username
+    }
         catch {Write-Host "Fallo al crear usuario $($User.Nombre) - $_"}
     }
-```
-
-## CREACIÓN DE EQUIPOS
-```powershell
-# Inicializar el número
-$numero = 0
-
-# Bucle que itera 15 veces
-for ($i = 1; $i -le 15; $i++) {
-    # Aumentar el número en 1
-    $numero++
-    
-    # Mostrar el número actual
-    Write-Host "Iteración $i: Número actual es $numero"
-}
 ```
 
 
 ```powershell
 # Crear carpeta compartida para cada grupo
-$clases = @("ASIR", "SMR", "", "Alumnos_DAW")
-
-foreach ($grupo in $grupos) {
-    $rutaCarpeta = "C:\Compartidas\$grupo"
+$ADou = Import-csv Z:\uo.csv
+foreach ($ou in $ADou){
+    $grupo=$ou.name
+    $rutaCarpeta = "C:\shares\carpetasPersonales$\SHARED_$grupo"
     New-Item -Path $rutaCarpeta -ItemType Directory
 
     # Establecer permisos
     $acl = Get-Acl $rutaCarpeta
-    $regla = New-Object System.Security.AccessControl.FileSystemAccessRule("$grupo",
+    $regla = New-Object System.Security.AccessControl.FileSystemAccessRule("$grupo","FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+    #Set-Acl $rutaCarpeta $regla
+    $acl.SetAccessRule($regla)
+}
 ```
 
 
@@ -238,5 +227,5 @@ foreach ($grupo in $grupos) {
 
 ## BUSCAR USUARIOS DE x UO
 ```powershell
-Get-ADUser -Filter { SamAccountName -like '*' } -SearchBase "OU=Primero,OU=ASIR,DC=aya,DC=local"
+Add-ADGroupMember -Identity $nombreGrupo -Members $usuario.SamAccountName
 ```
