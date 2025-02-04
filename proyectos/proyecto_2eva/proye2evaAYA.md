@@ -20,7 +20,7 @@ Se indican las características del centro educativo:
 
 ## 1. Archivos con los datos
 
-### `uo.csv`:
+### 1.1. `uo.csv`:
 **Uso:** contiene los nombres de cada curso bajo la columna `name`, para su uso posterior en los scripts.
 
 **Contenido:**
@@ -32,7 +32,7 @@ DAM
 DAW
 ```
 
-### `alumnos.csv`:
+### 1.2. `alumnos.csv`:
 **Uso:** contiene los datos de cada alumno con las columnas **Nombre**, **Primer Apellido**, **Segundo Apellido**, **Ciclo** y **Curso** para la creación de estos usuarios.
 
 **Contenido:**
@@ -43,7 +43,7 @@ María,Torres,Vázquez,ASIR,Primero
 
 ## 2. Scripts
 
-### `scriptUO.ps1`
+### 2.1. `scriptUO.ps1`
 
 #### Función:
 1. Crea la UO AULAS
@@ -84,7 +84,7 @@ foreach ($ou in $ADou) {
 }
 ```
 
-### `scriptPROFES.ps1`
+### 2.2. `scriptPROFES.ps1`
 #### Función:
 1. Crea la UO profesores y añade 15 profes a ella, llamándolos `PROF_01` a `PROF_15`
 
@@ -104,7 +104,7 @@ for ($i=1;$i -le 15;$i++){
     }
 ```
 
-### `scriptPROFES.ps1`
+### 2.3. `scriptPROFES.ps1`
 ## CARPETAS COMPARTIDAS EN GRUPO
 #### Función:
 1. Crea los grupos ASIR, DAM, DAW, SMR.
