@@ -21,6 +21,8 @@ Se indican las características del centro educativo:
 
 ## 1. Archivos con los datos
 
+Este apartado incluye información sobre los archivos de datos necesarios para la ejecución del script para nuestro dominio.
+
 ### 1.1. `uo.csv`:
 **Uso:** contiene los nombres de cada curso bajo la columna `name`, para su uso posterior en los scripts.
 
@@ -40,9 +42,15 @@ DAW
 ```
 Nombre,Primer Apellido,Segundo Apellido,Ciclo,Curso
 María,Torres,Vázquez,ASIR,Primero
+Carlos,Jiménez,Sánchez,ASIR,Primero
+Daniel,Moreno,Romero,ASIR,Primero
+Ana,Castro,Vázquez,ASIR,Primero
+...
 ```
 
 ## 2. Scripts
+
+Este apartado contiene explicaciones de los scripts individuales que se ejecutan en el script de instalación final.
 
 ### 2.1. `scriptUO.ps1`
 
@@ -128,12 +136,15 @@ foreach ($ou in $ADou){
         # Crear la carpeta para el grupo
     #New-Item -Path $rutaBase$rutaCarpeta -ItemType Directory -Force
         # Establecer permisos para la carpeta
-    $acl = Get-Acl $rutaBase$rutaCarpeta
-    $regla = New-Object System.Security.AccessControl.FileSystemAccessRule($grupo, "Modify", "Allow")
-    $acl.SetAccessRule($regla)
-    Set-Acl -Path $rutaBase$rutaCarpeta -AclObject $acl
+    
+    #$acl = Get-Acl $rutaBase$rutaCarpeta
+    #$regla = New-Object System.Security.AccessControl.FileSystemAccessRule($grupo, "Modify", "Allow")
+    #$acl.SetAccessRule($regla)
+    #Set-Acl -Path $rutaBase$rutaCarpeta -AclObject $acl
         # Compartir la carpeta
-    New-SmbShare -Name $grupo -Path $rutaBase$rutaCarpeta -FullAccess "AYA\$grupo"
+    New-SmbShare -Name $grupo -Path $rutaBase -FullAccess "AYA\$grupo"
+    #$rutaCarpeta 
+    
     # Mostrar mensaje de éxito
     Write-Host "Grupo '$grupo' creado y carpeta compartida '$rutaCarpeta' configurada."
 }
@@ -227,8 +238,9 @@ foreach ($ou in $ADou){
 
 ## 3. Script de instalación
 
+Incluye los scripts mencionados en el apartado 2. Su función es ejecutarlos todos en el orden correcto para que no haya problemas en la implementación de objetos.
 
-Contenido:
+Contenido de `scriptInstalacion.ps1`:
 ```powershell
 & "C:\scriptUO.ps1"
 & "C:\scriptPROFES.ps1"
