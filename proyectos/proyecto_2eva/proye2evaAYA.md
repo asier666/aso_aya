@@ -7,6 +7,7 @@ Desarrollo de un dominio para centro educativo `AYA`
 
 1. Archivos con los datos
 2. Scripts 
+3. Script de instalación
 
 
 Se indican las características del centro educativo:
@@ -56,7 +57,7 @@ María,Torres,Vázquez,ASIR,Primero
 #### Contenido de `scriptUO.ps1`:
 ```powershell
 Import-Module activedirectory
-$ADou = Import-csv Z:\uo2.csv
+$ADou = Import-csv Z:\uo.csv
     # Creación UO AULAS
 New-ADOrganizationalUnit -name "AULAS" -path "DC=aya,DC=local"
     # Creación UO CURSOS
@@ -104,11 +105,10 @@ for ($i=1;$i -le 15;$i++){
     }
 ```
 
-### 2.3. `scriptPROFES.ps1`
-## CARPETAS COMPARTIDAS EN GRUPO
+### 2.3. `scriptGRUPOS.ps1`
 #### Función:
 1. Crea los grupos ASIR, DAM, DAW, SMR.
-2. Crea y comparte las carpetas con cada grupo. (todos ven y usan todas las carpetas)
+2. Crea y comparte las carpetas con cada grupo, añadiendo también el share smb. (todos ven y usan todas las carpetas)
 
 #### Contenido:
 ```powershell
@@ -117,8 +117,8 @@ $ADou = Import-csv Z:\uo2.csv
 foreach ($ou in $ADou){
     $grupo=$ou.name
         #("Grupo_ASIR", "Grupo_SMR", "Grupo_DAM", "Grupo_DAW")
-    $rutaBase = "C:\Shares\carpetasPersonales$`\"
-    $rutaCarpeta = "SHARED_$grupo"
+    $rutaBase = "C:\Shares\carpetasInstituto\"
+    #$rutaCarpeta = "SHARED_$grupo"
         # Crear el grupo en Active Directory
     if (-not (Get-ADGroup -Filter { Name -eq $grupo })) {
        New-ADGroup -Name $grupo -GroupScope Global -Path "OU=$($grupo),OU=CURSOS,DC=aya,DC=local" -Description "Grupo para $grupo"
@@ -126,7 +126,7 @@ foreach ($ou in $ADou){
         Write-Host "El grupo '$grupo' ya existe."
     }
         # Crear la carpeta para el grupo
-    New-Item -Path $rutaBase$rutaCarpeta -ItemType Directory -Force
+    #New-Item -Path $rutaBase$rutaCarpeta -ItemType Directory -Force
         # Establecer permisos para la carpeta
     $acl = Get-Acl $rutaBase$rutaCarpeta
     $regla = New-Object System.Security.AccessControl.FileSystemAccessRule($grupo, "Modify", "Allow")
@@ -159,7 +159,7 @@ foreach ($ou in $ADou){
 
 
 
-## Script Alumnos `scriptAlumnos.ps1`
+## `scriptAlumnos.ps1`
 1. Introduce Alumnos desde alumnos.csv a su correspondiente curso y año en CURSOS
 2. Crea su carpeta compartida y le da los permisos necesarios.
 3. Mete a cada usuario en su correspondiente grupo
@@ -181,20 +181,20 @@ foreach ($User in $ADUsers){
                     -Surname "$($User.'Primer Apellido') $($User.'Segundo Apellido')" `
                     -UserPrincipalName "$($username)@$($DOM)" `
                     -Path "OU=$($User.Curso),OU=$($User.Ciclo),OU=CURSOS,DC=aya,DC=local"`
-                    -HomeDirectory "\\AYA-19\carpetasPersonales$`\$username" `
+                    -HomeDirectory "\\AYA-19\carpetasInstituto\$username" `
                     -HomeDrive 'U:' `
                     -AccountPassword $password `
                     -Enabled $true
             # Crear carpeta LOCAL para CADA USUARIO
-        New-Item -Path "C:\Shares\carpetasPersonales$" -Name $username -ItemType Directory -ErrorAction SilentlyContinue 
+        New-Item -Path "C:\Shares\carpetasInstituto" -Name $username -ItemType Directory -ErrorAction SilentlyContinue 
             # Permitir acceso a la carpeta de CADA USUARIO
         $user=$username
-        $acl = Get-Acl "C:\Shares\carpetasPersonales$`\$user"
+        $acl = Get-Acl "C:\Shares\carpetasInstituto\$user"
         $acl.SetAccessRuleProtection($true, $false)
         $ar = New-Object System.Security.AccessControl.FileSystemAccessRule("$user", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
         $acl.SetAccessRule($ar)
             # Asignar la ACL a la carpeta de CADA USUARIO
-        Set-Acl "C:\Shares\carpetasPersonales$`\$user" $acl
+        Set-Acl "C:\Shares\carpetasInstituto\$user" $acl
 
         # Meter usuario en cada grupo
         Add-ADGroupMember -Identity $ciclo -Members $username
@@ -202,14 +202,18 @@ foreach ($User in $ADUsers){
         catch {Write-Host "Fallo al crear usuario $($User.Nombre) - $_"}
     }
 ```
-
-
+<!--
+## `scriptAlumnos.ps1`
+1. Introduce Alumnos desde alumnos.csv a su correspondiente curso y año en CURSOS
+2. Crea su carpeta compartida y le da los permisos necesarios.
+3. Mete a cada usuario en su correspondiente grupo
 ```powershell
 # Crear carpeta compartida para cada grupo
+Import-Module ActiveDirectory
 $ADou = Import-csv Z:\uo.csv
 foreach ($ou in $ADou){
     $grupo=$ou.name
-    $rutaCarpeta = "C:\shares\carpetasPersonales$\SHARED_$grupo"
+    $rutaCarpeta = "C:\shares\carpetasInstituto\SHARED_$grupo"
     New-Item -Path $rutaCarpeta -ItemType Directory
 
     # Establecer permisos
@@ -219,13 +223,37 @@ foreach ($ou in $ADou){
     $acl.SetAccessRule($regla)
 }
 ```
+-->
+
+## 3. Script de instalación
 
 
-
-
-
-
-## BUSCAR USUARIOS DE x UO
+Contenido:
 ```powershell
-Add-ADGroupMember -Identity $nombreGrupo -Members $usuario.SamAccountName
+& "C:\scriptUO.ps1"
+& "C:\scriptPROFES.ps1"
+& "C:\scriptGRUPOS.ps1"
+& "C:\scriptAlumnos.ps1"
+& "C:\scriptCompartir.ps1"
 ```
+## 4. Configuración del dominio
+
+## 5. Directivas
+
+### 5.1. Lista de directivas a configurar
+#### Cambiar fondo de pantalla a instituto
+
+#### No permitir cambiar fondo de pantalla
+
+#### Prohibir cmd
+
+#### Prohibir acceso a ajustes y panel de control
+
+#### Hibernación a los 15 minutos sin actividad
+
+#### Apagado de equipos programado a las 15:00
+
+#### Recibir actualizaciones de windows
+
+
+### 5.2. Aplicación de directivas
