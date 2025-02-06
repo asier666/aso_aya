@@ -19,11 +19,21 @@ Se indican las características del centro educativo:
 - Cada curso tiene un aula propia con 15 equipos con Windows 10
 - Hay 15 profesores que pueden impartir clase en cualquier aula
 
-## 1. Archivos con los datos
+## 1. Configuración del dominio
+
+Nombre de dominio: `AYA-19`
+Distribución de UOs, grupos y usuarios:
+
+Aplicación de GPOs a Alumnos:
+
+Los grupos, UOs, usuarios y carpetas se implementan en el dominio mediante los scripts que se van a explicar en los puntos posteriores, empleando también los archivos de datos que expondré en el siguiente apartado.
+
+
+## 2. Archivos con los datos
 
 Este apartado incluye información sobre los archivos de datos necesarios para la ejecución del script para nuestro dominio.
 
-### 1.1. `uo.csv`:
+### 2.1. `uo.csv`:
 **Uso:** contiene los nombres de cada curso bajo la columna `name`, para su uso posterior en los scripts.
 
 **Contenido:**
@@ -35,7 +45,7 @@ DAM
 DAW
 ```
 
-### 1.2. `alumnos.csv`:
+### 2.2. `alumnos.csv`:
 **Uso:** contiene los datos de cada alumno con las columnas **Nombre**, **Primer Apellido**, **Segundo Apellido**, **Ciclo** y **Curso** para la creación de estos usuarios.
 
 **Contenido:**
@@ -48,11 +58,11 @@ Ana,Castro,Vázquez,ASIR,Primero
 ...
 ```
 
-## 2. Scripts
+## 3. Scripts
 
 Este apartado contiene explicaciones de los scripts individuales que se ejecutan en el script de instalación final.
 
-### 2.1. `scriptUO.ps1`
+### 3.1. `scriptUO.ps1`
 
 #### Función:
 1. Crea la UO AULAS
@@ -93,7 +103,7 @@ foreach ($ou in $ADou) {
 }
 ```
 
-### 2.2. `scriptPROFES.ps1`
+### 3.2. `scriptPROFES.ps1`
 #### Función:
 1. Crea la UO profesores y añade 15 profes a ella, llamándolos `PROF_01` a `PROF_15`
 
@@ -113,7 +123,7 @@ for ($i=1;$i -le 15;$i++){
     }
 ```
 
-### 2.3. `scriptGRUPOS.ps1`
+### 3.3. `scriptGRUPOS.ps1`
 #### Función:
 1. Crea los grupos ASIR, DAM, DAW, SMR.
 2. Crea y comparte las carpetas con cada grupo, añadiendo también el share smb. (todos ven y usan todas las carpetas)
@@ -150,27 +160,7 @@ foreach ($ou in $ADou){
 }
 ```
 
-
-
-## Datos de usuarios a tener en cuenta:
-### Usuario TEST
-|nombre dato | valor |
-|-----------|------------|
-|DistinguishedName | CN=test garcia,OU=Primero,OU=ASIR,DC=aya,DC=local |
-|Enabled           | True|
-|GivenName         | test|
-|Name              | test garcia|
-|ObjectClass       | user|
-|ObjectGUID        | 3345a00e-77fc-41d0-bdcd-0015d364922e|
-|SamAccountName    | usertest
-|SID               | S-1-5-21-96269640-80280514-4135821150-1118
-|Surname           | garcia
-|UserPrincipalName | usertest@aya.local
-
-
-
-
-## `scriptAlumnos.ps1`
+### 3.4. `scriptAlumnos.ps1`
 1. Introduce Alumnos desde alumnos.csv a su correspondiente curso y año en CURSOS
 2. Crea su carpeta compartida y le da los permisos necesarios.
 3. Mete a cada usuario en su correspondiente grupo
@@ -236,11 +226,11 @@ foreach ($ou in $ADou){
 ```
 -->
 
-## 3. Script de instalación
+## 4. Script de instalación
 
 Incluye los scripts mencionados en el apartado 2. Su función es ejecutarlos todos en el orden correcto para que no haya problemas en la implementación de objetos.
 
-Contenido de `scriptInstalacion.ps1`:
+### Contenido de `scriptInstalacion.ps1`:
 ```powershell
 & "C:\scriptUO.ps1"
 & "C:\scriptPROFES.ps1"
@@ -248,24 +238,81 @@ Contenido de `scriptInstalacion.ps1`:
 & "C:\scriptAlumnos.ps1"
 & "C:\scriptCompartir.ps1"
 ```
-## 4. Configuración del dominio
 
 ## 5. Directivas
 
+Cabe mencionar que realicé esta configuración en una máquina de Windows Server 2019 en inglés, por lo que la traducción de las directivas puede que no sea 100% fiel a las de Windows en Español.
+
 ### 5.1. Lista de directivas a configurar
-#### Cambiar fondo de pantalla a instituto
+#### 5.1.1. Cambiar fondo de pantalla a instituto
+**Configuración de usuario > Políticas > Plantillas Administrativas > Escritorio > Escritorio > Fondo de pantalla de Escritorio**
 
-#### No permitir cambiar fondo de pantalla
+:white_check_mark: ``Habilitado``
 
-#### Prohibir cmd
+Opciones:
+- **Nombre de fondo de pantalla:** `\\aya-19\carpetasInstituto\fondo.png`
+- **Estidlo de fondo de pantalla:** ``Centrado``
 
-#### Prohibir acceso a ajustes y panel de control
+#### 5.1.2. No permitir cambiar fondo de pantalla
+**Configuración de usuario > Políticas > Plantillas Administrativas > Panel de Control > Personalización > Prohibir cambiar el fondo de pantalla**
 
-#### Hibernación a los 15 minutos sin actividad
+:white_check_mark: ``Habilitado``
 
-#### Apagado de equipos programado a las 15:00
 
-#### Recibir actualizaciones de windows
+#### 5.1.3. Activar salvapantallas (para permitir que el equipo hiberne)
+**Configuración de usuario > Políticas > Plantillas Administrativas > Panel de Control > Personalización > Permitir salvapantallas**
+
+:white_check_mark: `Habilitado`
+
+#### 5.1.4. Prohibir acceso a ajustes y panel de control
+**Configuración de usuario > Políticas > Plantillas Administrativas > Panel de Control > Aspecto > Deshabilitar mostrar Panel de Control**
+
+:white_check_mark: `Habilitado`
+
+#### 5.1.5. Contraseña protege al salvapantallas
+**Configuración de usuario > Políticas > Plantillas Administrativas > Panel de Control > Personalización > Salvapantallas protegido por Contraseña**
+
+:white_check_mark: `Habilitado`
+
+#### 5.1.6. Hibernación a los 15 minutos sin actividad
+**Configuración de usuario > Políticas > Plantillas Administrativas > Panel de Control > Personalización > Tiempo de espera de Salvapantallas**
+
+:white_check_mark: `Habilitado`
+
+Opciones:
+- **Segundos:** `900`
+
+#### 5.1.7. Ocultar "Windows Marketplace"
+**Configuración de usuario > Políticas > Plantillas Administrativas > Panel de Control > Programas > Ocultar "Windows Marketplace"**
+
+:white_check_mark: `Habilitado`
+
+#### 5.1.8. Prohibir cmd
+**Configuración de usuario > Políticas > Plantillas Administrativas > Sistema > Prohibir acceso al intérprete de comandos**
+
+:white_check_mark: `Habilitado`
+
+Opciones:
+- **¿Deshabilitar también la ejecución de scripts?:** `No`
+
+#### 5.1.9. Prohibir edición de registro
+**Configuración de usuario > Políticas > Plantillas Administrativas > Sistema > Prohibir acceso a herramientas de edición del registro**
+
+:white_check_mark: `Habilitado`
+
+#### 5.1.10. Recibir actualizaciones de windows
+**Configuración de usuario > Políticas > Plantillas Administrativas > Sistema > Actualizaciones automáticas de Windows**
+
+:white_check_mark: `Deshabilitado`
+
+De esta manera, hacemos que se descarguen e instalen las actualizaciones de Windows automáticamente.
+
+#### 5.1.11. Deshabilitar Administrador de Tareas en Ctr+Alt+Del
+**Configuración de usuario > Políticas > Plantillas Administrativas > Sistema/Opciones Ctrl+Alt+Del > Deshactivar Administrador de Tareas**
+
+:white_check_mark: `Habilitado`
 
 
 ### 5.2. Aplicación de directivas
+
+Estas directivas están aplicadas en la `GPO_Alumnos`
