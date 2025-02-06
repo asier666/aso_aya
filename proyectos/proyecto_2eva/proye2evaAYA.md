@@ -28,6 +28,10 @@ Aplicación de GPOs a Alumnos:
 
 Los grupos, UOs, usuarios y carpetas se implementan en el dominio mediante los scripts que se van a explicar en los puntos posteriores, empleando también los archivos de datos que expondré en el siguiente apartado.
 
+Diagrama:
+
+![alt text](diagrama.png)
+
 
 ## 2. Archivos con los datos
 
@@ -239,11 +243,14 @@ Incluye los scripts mencionados en el apartado 2. Su función es ejecutarlos tod
 & "C:\scriptCompartir.ps1"
 ```
 
-## 5. Directivas
+## 5. GPOs y Directivas
 
 Cabe mencionar que realicé esta configuración en una máquina de Windows Server 2019 en inglés, por lo que la traducción de las directivas puede que no sea 100% fiel a las de Windows en Español.
 
-### 5.1. Lista de directivas a configurar
+### 5.1 ``GPO_Alumnos``
+
+Contiene las siguientes directivas:
+
 #### 5.1.1. Cambiar fondo de pantalla a instituto
 **Configuración de usuario > Políticas > Plantillas Administrativas > Escritorio > Escritorio > Fondo de pantalla de Escritorio**
 
@@ -312,6 +319,10 @@ De esta manera, hacemos que se descarguen e instalen las actualizaciones de Wind
 
 :white_check_mark: `Habilitado`
 
+#### 5.1.12. Eliminar Agregar o Quitar Programas
+**Configuración de usuario > Políticas > Plantillas Administrativas > Panel de Control > Agregar o Quitar Programas > Eliminar Agregar o Quitar Programas**
+
+:white_check_mark: `Habilitado`
 
 ### 5.2. Aplicación de directivas
 
