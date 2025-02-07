@@ -45,6 +45,8 @@
       - [5.1.15. Longitud mínima de la contraseña](#5115-longitud-mínima-de-la-contraseña)
       - [5.1.16. Vigencia máxima de la contraseña](#5116-vigencia-máxima-de-la-contraseña)
     - [5.2. Aplicación de directivas](#52-aplicación-de-directivas)
+  - [6. Contacto :feelsgood:](#6-contacto-feelsgood)
+    - [Asier Yusto Abad - github.com/asier666 - 2025](#asier-yusto-abad---githubcomasier666---2025)
 
 
 ## 1. Configuración del dominio
@@ -397,3 +399,6 @@ Directivas de seguridad de ``GPO_Profesores``:
 - 5.1.14. Requerir complejidad mínima para la contraseña
 - 5.1.15. Longitud mínima de la contraseña
 - 5.1.16. Vigencia máxima de la contraseña
+
+## 6. Contacto :feelsgood:
+### Asier Yusto Abad - github.com/asier666 - 2025
