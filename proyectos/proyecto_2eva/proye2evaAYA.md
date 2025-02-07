@@ -1,5 +1,4 @@
-# Proyecto de la 2ª Evaluación
-Asier Yusto Abad
+# Documentación Proyecto 2ª Evaluación - Asier Yusto Abad
 
 Desarrollo de un dominio para centro educativo `AYA`
 
@@ -10,43 +9,53 @@ Desarrollo de un dominio para centro educativo `AYA`
 3. Script de instalación
 
 
-Se indican las características del centro educativo:
-
-- Se imparten los ciclos formativos de ASIR, SMR, DAM y DAW
-- Cada ciclo formativo tiene un curso de primero y otro de segundo
-- Los primeros cursos tienen 30 alumnos matriculados y los segundos cursos 15
-- Los datos de los alumnos se encuentran en este [fichero](./alumnos.csv)
-- Cada curso tiene un aula propia con 15 equipos con Windows 10
-- Hay 15 profesores que pueden impartir clase en cualquier aula
 
 ## 1. Configuración del dominio
 
 Nombre de dominio: `AYA-19`
-Distribución de UOs, grupos y usuarios:
 
-Aplicación de GPOs a Alumnos:
+### 1.1. Estructura del dominio
+En la raíz del dominio se encuentran las **UOs AULAS**, que contiene una **UO** para cada **ciclo**, conteniendo dentro los **15 equipos de cada aula**.
+
+Al mismo nivel que la UO AULAS está la **UO CURSOS**, cuyo contenido es otra **UO** para cada uno de los **ciclos**. Dentro de esta UO del ciclo, tendremos el **grupo** de cada ciclo y las **UOs Primero** y **Segundo**, que contienen los alumnos. 
+Dentro de las **UO Primero** habrá **30 usuarios** y dentro de las **UO Segundo** habrá **15 usuarios**. 
+
+Por último, al mismo nivel que las UO AULAS y CURSOS, está la **UO PROFESORES**, conteniendo los **15 usuarios** para el uso de los profes.
+
+*Diagrama visual de esta configuración*:
+
+![Estructuración del dominio](diagrama.png)
+
+### 1.2. Aplicación de GPOs
+
+El control de las cuentas de los Alumnos se realiza mediante la GPO `GPO_Alumnos`, que detallaré más adelante. Esta GPO se vincula a la **UO CURSOS** para que se aplique a todos los usuarios contenidos en ella.
+
+El control de las cuentas de Profesores se configura con la GPO `GPO_Profesores`, que también se detalla más adelante, permitiendo más libertad que a los Alumnos, pero con sus propias medidas de seguridad. Se vincula directamente a la **UO PROFES**.
+
+### 1.3. Implementación del dominio
 
 Los grupos, UOs, usuarios y carpetas se implementan en el dominio mediante los scripts que se van a explicar en los puntos posteriores, empleando también los archivos de datos que expondré en el siguiente apartado.
 
-Diagrama:
+Cada script hace unas funciones y están separados para su mejor comprensión y tratamiento (se podría poner todo en un mismo script, pero esta es otra forma de visualizarlo). Primero expondré los scripts individuales y el último, `scriptInstalacion.ps1`, ejecutará todos los anteriores.
 
-![alt text](diagrama.png)
+Para empezar, tendremos que crear una carpeta compartida desde el Servicio de Archivos y Almacenamiento de nuestro administrador del Servidor. Esta carpeta estará en `C:\Shares` y se llamará `carpetasInstituto`. Esta va a ser la carpeta que se compartirá en red para almacenar las carpetas de los usuarios. 
 
+Podemos empezar copiando el archivo `fondo.png` a esta carpeta para que se aplique más adelante en las políticas de grupo.
 
 ## 2. Archivos con los datos
 
 Este apartado incluye información sobre los archivos de datos necesarios para la ejecución del script para nuestro dominio.
 
 ### 2.1. `uo.csv`:
-**Uso:** contiene los nombres de cada curso bajo la columna `name`, para su uso posterior en los scripts.
+**Uso:** contiene los nombres de cada curso bajo la columna `name`, para su uso posterior en los scripts, y la ruta del dominio raiz bajo la columna `path`.
 
 **Contenido:**
 ```
-name
-ASIR
-SMR
-DAM
-DAW
+name,path
+ASIR,DC=aya,DC=local
+SMR,DC=aya,DC=local
+DAM,DC=aya,DC=local
+DAW,DC=aya,DC=local
 ```
 
 ### 2.2. `alumnos.csv`:
@@ -140,25 +149,14 @@ foreach ($ou in $ADou){
     $grupo=$ou.name
         #("Grupo_ASIR", "Grupo_SMR", "Grupo_DAM", "Grupo_DAW")
     $rutaBase = "C:\Shares\carpetasInstituto\"
-    #$rutaCarpeta = "SHARED_$grupo"
         # Crear el grupo en Active Directory
     if (-not (Get-ADGroup -Filter { Name -eq $grupo })) {
        New-ADGroup -Name $grupo -GroupScope Global -Path "OU=$($grupo),OU=CURSOS,DC=aya,DC=local" -Description "Grupo para $grupo"
     } else {
         Write-Host "El grupo '$grupo' ya existe."
     }
-        # Crear la carpeta para el grupo
-    #New-Item -Path $rutaBase$rutaCarpeta -ItemType Directory -Force
-        # Establecer permisos para la carpeta
-    
-    #$acl = Get-Acl $rutaBase$rutaCarpeta
-    #$regla = New-Object System.Security.AccessControl.FileSystemAccessRule($grupo, "Modify", "Allow")
-    #$acl.SetAccessRule($regla)
-    #Set-Acl -Path $rutaBase$rutaCarpeta -AclObject $acl
         # Compartir la carpeta
     New-SmbShare -Name $grupo -Path $rutaBase -FullAccess "AYA\$grupo"
-    #$rutaCarpeta 
-    
     # Mostrar mensaje de éxito
     Write-Host "Grupo '$grupo' creado y carpeta compartida '$rutaCarpeta' configurada."
 }
@@ -207,32 +205,20 @@ foreach ($User in $ADUsers){
         catch {Write-Host "Fallo al crear usuario $($User.Nombre) - $_"}
     }
 ```
-<!--
-## `scriptAlumnos.ps1`
-1. Introduce Alumnos desde alumnos.csv a su correspondiente curso y año en CURSOS
-2. Crea su carpeta compartida y le da los permisos necesarios.
-3. Mete a cada usuario en su correspondiente grupo
-```powershell
-# Crear carpeta compartida para cada grupo
-Import-Module ActiveDirectory
-$ADou = Import-csv Z:\uo.csv
-foreach ($ou in $ADou){
-    $grupo=$ou.name
-    $rutaCarpeta = "C:\shares\carpetasInstituto\SHARED_$grupo"
-    New-Item -Path $rutaCarpeta -ItemType Directory
 
-    # Establecer permisos
-    $acl = Get-Acl $rutaCarpeta
-    $regla = New-Object System.Security.AccessControl.FileSystemAccessRule("$grupo","FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-    #Set-Acl $rutaCarpeta $regla
-    $acl.SetAccessRule($regla)
-}
-```
--->
+### 3.5. Dificultades en los scripts.
+
+He automatizado las tareas lo más que he podido, no sin antes encontrarme con distintos problemas, unos que he conseguido arreglar y otros que no.
+
+Las carpetas compartidas por cada Grupo se crean correctamente mediante New-SmbShare, teniendo acceso a la carpeta desde cualquier **alumno** ingresando a la direccón de red `\\AYA-19\`. Desde aquí, veremos una carpeta para cada grupo a la cual sólo nos dejará acceder si el usuario pertenece a dicho grupo. 
+
+El problema es que creo, de otra manera y dentro de esa carpeta compartida, las carpetas `SHARED_GRUPO` (SHARED_ASIR, SHARED_DAM...), que implementé intentando realizar esta tarea de otra manera, y ahora no consigo quitar del script.
+
+Por lo tanto, cada carpeta compartida en grupo en el almacenamiento en red funciona correctamente, pero dentro de ella tendremos las carpetas "SHARED_GRUPO", que no funcionan, y no tendrían que estar ahí.
 
 ## 4. Script de instalación
 
-Incluye los scripts mencionados en el apartado 2. Su función es ejecutarlos todos en el orden correcto para que no haya problemas en la implementación de objetos.
+Incluye los scripts mencionados en el apartado 3. Su función es ejecutarlos todos en el orden correcto para que no haya problemas en la implementación de los objetos.
 
 ### Contenido de `scriptInstalacion.ps1`:
 ```powershell
@@ -240,8 +226,9 @@ Incluye los scripts mencionados en el apartado 2. Su función es ejecutarlos tod
 & "C:\scriptPROFES.ps1"
 & "C:\scriptGRUPOS.ps1"
 & "C:\scriptAlumnos.ps1"
-& "C:\scriptCompartir.ps1"
 ```
+
+Después de implementar todos los objetos, deberemos configurar las directivas a mano para completar la configuración del dominio.
 
 ## 5. GPOs y Directivas
 
@@ -324,6 +311,50 @@ De esta manera, hacemos que se descarguen e instalen las actualizaciones de Wind
 
 :white_check_mark: `Habilitado`
 
+### Directivas de seguridad
+
+#### 5.1.13. Auditar eventos de inicios de sesión
+**Configuración de equipo > Ajustes de Windows > Ajustes de seguridad > Políticas Locales > Auditar eventos de inicio de sesión**
+
+:white_check_mark: `Definir esta configuración de política`
+
+Auditar estos intentos:
+- :white_check_mark: `Fallidos`
+
+#### 5.1.14. Requerir complejidad mínima para la contraseña
+**Configuración de equipo > Ajustes de Windows > Ajustes de seguridad > Políticas de Cuenta > Políticas de Contraseñas > Contraseña debe tener complejidad mínima**
+
+:white_check_mark: `Definir esta configuración de política`
+
+:white_check_mark: `Habilitado`
+
+#### 5.1.15. Longitud mínima de la contraseña
+**Configuración de equipo > Ajustes de Windows > Ajustes de seguridad > Políticas de Cuenta > Políticas de Contraseñas > Longitud mínima de la contraseña**
+
+:white_check_mark: `Definir esta configuración de política`
+
+La contraseña debe tener al menos: `8 carácteres`
+
+#### 5.1.16. Vigencia máxima de la contraseña
+**Configuración de equipo > Ajustes de Windows > Ajustes de seguridad > Políticas de Cuenta > Políticas de Contraseñas > Vigencia máxima de la contraseña**
+
+:white_check_mark: `Definir esta configuración de política`
+
+La contraseña expirará en: `66 días`
+
 ### 5.2. Aplicación de directivas
 
-Estas directivas están aplicadas en la `GPO_Alumnos`
+Todas las directivas anteriores están aplicadas en la `GPO_Alumnos`, que está vinculada directamente a la **UO CURSOS**, por lo que se aplicará a todos los alumnos del centro.
+
+Tendremos una segunda GPO, ``GPO_Profesores`` que contendrá algunas de las directivas del apartado anterior para vincularse a la **UO_PROFESORES**, aplicándose sólo a los usuarios de esta UO.
+
+Las directivas de ``GPO_Profesores`` son:
+- 5.1.2. No permitir cambiar fondo de pantalla
+- 5.1.7. Ocultar "Windows Marketplace"
+- 5.1.10. Recibir actualizaciones de windows
+
+Directivas de seguridad de ``GPO_Profesores``:
+- 5.1.13. Auditar eventos de inicios de sesión
+- 5.1.14. Requerir complejidad mínima para la contraseña
+- 5.1.15. Longitud mínima de la contraseña
+- 5.1.16. Vigencia máxima de la contraseña
