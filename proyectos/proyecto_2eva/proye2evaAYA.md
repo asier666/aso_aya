@@ -1,13 +1,44 @@
 # Documentación Proyecto 2ª Evaluación - Asier Yusto Abad
 
-Desarrollo de un dominio para centro educativo `AYA`
-
 ## Índice
+1. Configuración del dominio
+- 1.1. Estructura del dominio
+- 1.2. Aplicación de GPOs
+- 1.3. Implementación del dominio
 
-1. Archivos con los datos
-2. Scripts 
-3. Script de instalación
+2. Archivos con los datos
+- 2.1. uo.csv
+- 2.2. alumnos.csv
 
+3. Scripts
+- 3.1. scriptUO.ps1
+- 3.2. scriptPROFES.ps1
+- 3.3. scriptGRUPOS.ps1
+- 3.4. scriptAlumnos.ps1
+- 3.5. Dificultades en los scripts
+
+4. Script de instalación
+
+5. GPOs y Directivas
+
+- 5.1. GPO_Alumnos
+  - 5.1.1. Cambiar fondo de pantalla a instituto
+  - 5.1.2. No permitir cambiar fondo de pantalla
+  - 5.1.3. Activar salvapantallas (para permitir que el equipo hiberne)
+  - 5.1.4. Prohibir acceso a ajustes y panel de control
+  - 5.1.5. Contraseña protege al salvapantallas
+  - 5.1.6. Hibernación a los 15 minutos sin actividad
+  - 5.1.7. Ocultar "Windows Marketplace"
+  - 5.1.8. Prohibir cmd
+  - 5.1.9. Prohibir edición de registro
+  - 5.1.10. Recibir actualizaciones de windows
+  - 5.1.11. Deshabilitar Administrador de Tareas en Ctr+Alt+Del
+  - 5.1.12. Eliminar Agregar o Quitar Programas
+  - 5.1.13. Auditar eventos de inicios de sesión
+  - 5.1.14. Requerir complejidad mínima para la contraseña
+  - 5.1.15. Longitud mínima de la contraseña
+  - 5.1.16. Vigencia máxima de la contraseña
+- 5.2. Aplicación de directivas
 
 
 ## 1. Configuración del dominio
