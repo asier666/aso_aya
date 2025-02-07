@@ -183,7 +183,7 @@ for ($i=1;$i -le 15;$i++){
 #### Contenido:
 ```powershell
 Import-Module activedirectory
-$ADou = Import-csv Z:\uo2.csv
+$ADou = Import-csv Z:\uo.csv
 foreach ($ou in $ADou){
     $grupo=$ou.name
         #("Grupo_ASIR", "Grupo_SMR", "Grupo_DAM", "Grupo_DAW")
