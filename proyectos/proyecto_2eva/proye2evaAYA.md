@@ -1,6 +1,7 @@
 # Documentación Proyecto 2ª Evaluación - Asier Yusto Abad
 
 ## Índice
+
 - [Documentación Proyecto 2ª Evaluación - Asier Yusto Abad](#documentación-proyecto-2ª-evaluación---asier-yusto-abad)
   - [Índice](#índice)
   - [1. Configuración del dominio](#1-configuración-del-dominio)
@@ -48,7 +49,9 @@
 
 ## 1. Configuración del dominio
 
-Nombre de dominio: `AYA-19`
+Nombre de dominio: `aya.local`
+
+Nombre del equipo controlador de dominio: `aya-19`
 
 ### 1.1. Estructura del dominio
 En la raíz del dominio se encuentran las **UOs AULAS**, que contiene una **UO** para cada **ciclo**, conteniendo dentro los **15 equipos de cada aula**.
